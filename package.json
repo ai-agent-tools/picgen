@@ -4,7 +4,7 @@
   "description": "A lightweight image generation connector for AI agents.",
   "type": "module",
   "bin": {
-    "picgen": "./dist/cli.js"
+    "picgen": "dist/cli.js"
   },
   "publishConfig": {
     "access": "public"
