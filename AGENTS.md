@@ -46,7 +46,7 @@ Keep the code organized around these layers:
 - `protocol adapter`: how requests are translated, currently `openai-images` and `gemini`
 - `mode`: model preference such as `fast`, `balanced`, or `premium`
 - `preset`: usage defaults such as `poster`, `product-shot`, or `social-cover`
-- `routing`: provider priority and model selection
+- `routing`: default provider, fallback providers, and model selection
 
 Users should not need to provide model, resolution, aspect ratio, quality, or provider on every request. Defaults should come from setup, presets, and routing.
 
@@ -73,14 +73,16 @@ Implemented:
 - CLI skeleton
 - Config schema and defaults
 - Provider list/add/edit/enable/disable/remove
+- Provider/mode/preset preference commands
 - Doctor JSON output
 - Dry-run generation planning
+- Local output asset and metadata writing
+- Real OpenAI-compatible image generation call
 - Routing tests
 - Codex skill draft
 
 Not implemented yet:
 
-- Real OpenAI-compatible image generation call
 - Real Gemini image generation call
 - Provider `test` network checks
 - Keychain-backed API key storage

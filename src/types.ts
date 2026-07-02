@@ -64,6 +64,7 @@ export interface GeneratedImage {
   metadata_path: string;
   width?: number;
   height?: number;
+  revised_prompt?: string;
 }
 
 export type ProviderImageOutput =
@@ -82,6 +83,11 @@ export type ProviderImageOutput =
       data: Uint8Array;
       mime_type: string;
     };
+
+export interface ProviderGenerationResult {
+  images: GeneratedImage[];
+  provider_response?: unknown;
+}
 
 export interface DoctorProviderResult {
   name: string;

@@ -77,8 +77,11 @@ The repository currently implements:
 - default config and schema validation
 - interactive provider add/edit flow
 - provider enable/disable/remove/list
+- provider/mode/preset preference commands
 - doctor JSON output
 - dry-run generation planning
+- local output asset and metadata writing
+- OpenAI-compatible image generation call
 - routing tests
 
-Real provider calls are intentionally not implemented yet.
+Gemini generation and provider `test` network checks are not implemented yet.

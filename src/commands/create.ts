@@ -3,7 +3,7 @@ import { createGenerationRun, writeGenerationMetadata } from "../assets/output.j
 import { loadConfig } from "../config/store.js";
 import { getAdapter } from "../providers/adapters.js";
 import { resolveGenerationPlan } from "../routing/resolve.js";
-import type { GeneratedImage, ResolvedGenerationPlan } from "../types.js";
+import type { ProviderGenerationResult, ResolvedGenerationPlan } from "../types.js";
 
 export interface CreateOptions {
   dryRun?: boolean;
@@ -88,9 +88,9 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
   });
 
   const adapter = getAdapter(plan.provider.protocol);
-  let results: GeneratedImage[];
+  let result: ProviderGenerationResult;
   try {
-    results = await adapter.generate(runtimePlan, run);
+    result = await adapter.generate(runtimePlan, run);
   } catch (error) {
     await writeGenerationMetadata(run, {
       plan: runtimePlanOutput,
@@ -116,7 +116,8 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
       metadata_path: run.metadataPath,
       prompt_path: run.promptPath
     },
-    images: results
+    provider_response: result.provider_response,
+    images: result.images
   });
 
   console.log(
@@ -126,7 +127,7 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
         dry_run: false,
         output_dir: run.outputDirectory,
         metadata_path: run.metadataPath,
-        images: results
+        images: result.images
       },
       null,
       2
