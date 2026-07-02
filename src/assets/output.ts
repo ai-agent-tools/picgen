@@ -48,7 +48,17 @@ export async function writeGenerationMetadata(
   run: GenerationRun,
   metadata: GenerationMetadata
 ): Promise<void> {
-  await writeFile(run.metadataPath, JSON.stringify(metadata, null, 2), "utf8");
+  await writeFile(run.metadataPath, JSON.stringify(redactGenerationMetadata(metadata), null, 2), "utf8");
+}
+
+export function redactGenerationMetadata(metadata: GenerationMetadata): GenerationMetadata {
+  return {
+    ...metadata,
+    provider_response:
+      metadata.provider_response === undefined
+        ? undefined
+        : redactProviderImageData(metadata.provider_response)
+  };
 }
 
 export async function writeProviderImage(
@@ -178,4 +188,36 @@ function slug(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
+}
+
+function redactProviderImageData(value: unknown, key?: string): unknown {
+  if (Array.isArray(value)) {
+    return value.map((item) => redactProviderImageData(item));
+  }
+
+  if (!value || typeof value !== "object") {
+    return shouldRedactImageDataKey(key) && typeof value === "string"
+      ? redactedProviderDataPlaceholder(value)
+      : value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([entryKey, entryValue]) => [
+      entryKey,
+      redactProviderImageData(entryValue, entryKey)
+    ])
+  );
+}
+
+function shouldRedactImageDataKey(key: string | undefined): boolean {
+  return (
+    key === "b64_json" ||
+    key === "data" ||
+    key === "thoughtSignature" ||
+    key === "thought_signature"
+  );
+}
+
+function redactedProviderDataPlaceholder(value: string): string {
+  return `[redacted provider data: ${value.length} chars]`;
 }

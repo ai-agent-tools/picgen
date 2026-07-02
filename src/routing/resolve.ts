@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { cwd } from "node:process";
-import type { PicgenConfig, ResolvedGenerationPlan } from "../types.js";
+import type { PicgenConfig, ReferenceImage, ResolvedGenerationPlan } from "../types.js";
 
 export interface ResolveOptions {
   prompt: string;
@@ -9,6 +9,7 @@ export interface ResolveOptions {
   modeName?: string;
   model?: string;
   outputDirectory?: string;
+  referenceImages?: ReferenceImage[];
 }
 
 export function resolveGenerationPlan(
@@ -47,7 +48,8 @@ export function resolveGenerationPlan(
       presetName,
       preset,
       modeName,
-      outputDirectory: options.outputDirectory ?? join(cwd(), "outputs", "picgen")
+      outputDirectory: options.outputDirectory ?? join(cwd(), "outputs", "picgen"),
+      referenceImages: options.referenceImages ?? []
     };
   }
 

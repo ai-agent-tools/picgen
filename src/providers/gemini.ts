@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { writeProviderImages } from "../assets/output.js";
 import { buildGeminiProtocolUrl } from "./urls.js";
 import type {
@@ -12,6 +13,7 @@ export interface GeminiGenerateContentResponse {
     content?: {
       parts?: Array<{
         text?: string;
+        thought?: boolean;
         inlineData?: {
           data?: string;
           mimeType?: string;
@@ -41,6 +43,7 @@ export class GeminiAdapter {
     const responses: GeminiGenerateContentResponse[] = [];
     const providerImages: ProviderImageOutput[] = [];
     const requestCount = Math.max(1, plan.preset.n);
+    const referenceParts = await readReferenceImageParts(plan);
 
     for (let index = 0; index < requestCount; index += 1) {
       const response = await fetch(buildGeminiGenerateContentUrl(plan.provider.base_url, plan.model), {
@@ -49,7 +52,7 @@ export class GeminiAdapter {
           "x-goog-api-key": apiKey,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(buildGeminiGenerateContentRequest(plan))
+        body: JSON.stringify(buildGeminiGenerateContentRequest(plan, referenceParts))
       });
 
       const raw = await readJsonResponse(response);
@@ -70,7 +73,8 @@ export class GeminiAdapter {
 }
 
 export function buildGeminiGenerateContentRequest(
-  plan: ResolvedGenerationPlan
+  plan: ResolvedGenerationPlan,
+  referenceParts: Array<Record<string, unknown>> = []
 ): Record<string, unknown> {
   return {
     contents: [
@@ -79,20 +83,30 @@ export function buildGeminiGenerateContentRequest(
         parts: [
           {
             text: plan.prompt
-          }
+          },
+          ...referenceParts
         ]
       }
     ],
     generationConfig: {
-      responseModalities: ["TEXT", "IMAGE"],
-      responseFormat: {
-        image: removeUndefined({
-          aspectRatio: plan.preset.aspect_ratio,
-          imageSize: mapGeminiImageSize(plan.preset.size)
-        })
-      }
+      responseModalities: ["IMAGE"],
+      imageConfig: removeUndefined({
+        aspectRatio: plan.preset.aspect_ratio,
+        imageSize: mapGeminiImageSize(plan.preset.size)
+      })
     }
   };
+}
+
+async function readReferenceImageParts(plan: ResolvedGenerationPlan): Promise<Array<Record<string, unknown>>> {
+  return Promise.all(
+    plan.referenceImages.map(async (image) => ({
+      inlineData: {
+        mimeType: image.mime_type,
+        data: (await readFile(image.path)).toString("base64")
+      }
+    }))
+  );
 }
 
 export function extractGeminiImages(
@@ -100,6 +114,7 @@ export function extractGeminiImages(
 ): ProviderImageOutput[] {
   const parts = response.candidates?.flatMap((candidate) => candidate.content?.parts ?? []) ?? [];
   const imageParts = parts
+    .filter((part) => part.thought !== true)
     .map((part) => part.inlineData ?? normalizeInlineData(part.inline_data))
     .filter(Boolean);
 

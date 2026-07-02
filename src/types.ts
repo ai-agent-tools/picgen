@@ -26,6 +26,12 @@ export interface PresetConfig {
   output_format: OutputFormat;
 }
 
+export interface ReferenceImage {
+  path: string;
+  mime_type: string;
+  bytes: number;
+}
+
 export interface RoutingConfig {
   default_mode: ModeName;
   default_provider: string;
@@ -49,6 +55,7 @@ export interface ResolvedGenerationPlan {
   preset: PresetConfig;
   modeName: string;
   outputDirectory: string;
+  referenceImages: ReferenceImage[];
 }
 
 export interface GenerationRun {

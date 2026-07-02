@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -54,20 +54,35 @@ describe("Gemini generateContent adapter", () => {
   });
 
   it("builds a generateContent image request", () => {
-    expect(buildGeminiGenerateContentRequest(plan)).toEqual({
+    expect(
+      buildGeminiGenerateContentRequest(plan, [
+        {
+          inlineData: {
+            mimeType: "image/png",
+            data: "abc"
+          }
+        }
+      ])
+    ).toEqual({
       contents: [
         {
           role: "user",
-          parts: [{ text: "test prompt" }]
+          parts: [
+            { text: "test prompt" },
+            {
+              inlineData: {
+                mimeType: "image/png",
+                data: "abc"
+              }
+            }
+          ]
         }
       ],
       generationConfig: {
-        responseModalities: ["TEXT", "IMAGE"],
-        responseFormat: {
-          image: {
-            aspectRatio: "3:4",
-            imageSize: "2K"
-          }
+        responseModalities: ["IMAGE"],
+        imageConfig: {
+          aspectRatio: "3:4",
+          imageSize: "2K"
         }
       }
     });
@@ -81,6 +96,13 @@ describe("Gemini generateContent adapter", () => {
             content: {
               parts: [
                 { text: "ignored" },
+                {
+                  thought: true,
+                  inlineData: {
+                    data: "thought",
+                    mimeType: "image/png"
+                  }
+                },
                 {
                   inlineData: {
                     data: "abc",
@@ -132,6 +154,40 @@ describe("Gemini generateContent adapter", () => {
     await expect(readFile(result.images[0].path, "utf8")).resolves.toBe("first image");
     await expect(readFile(result.images[1].path, "utf8")).resolves.toBe("second image");
     expect(result.provider_response).toEqual([expect.any(Object), expect.any(Object)]);
+  });
+
+  it("sends reference images as inlineData parts", async () => {
+    const referencePath = join(tempDir, "reference.png");
+    await writeFile(referencePath, "reference image");
+    const planWithReference = {
+      ...plan,
+      referenceImages: [
+        {
+          path: referencePath,
+          mime_type: "image/png",
+          bytes: 15
+        }
+      ]
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(geminiResponse("generated image 1", "image/png"))
+      .mockResolvedValueOnce(geminiResponse("generated image 2", "image/png"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const run = await createGenerationRun(planWithReference, new Date("2026-07-02T10:11:12"));
+    await new GeminiAdapter().generate(planWithReference, run);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.contents[0].parts).toEqual([
+      { text: "test prompt" },
+      {
+        inlineData: {
+          mimeType: "image/png",
+          data: Buffer.from("reference image").toString("base64")
+        }
+      }
+    ]);
   });
 
   it("surfaces provider error messages", async () => {

@@ -15,7 +15,8 @@ const plan: GenerationPlanOutput = {
   quality: "high",
   n: 2,
   output_format: "png",
-  output_directory: "/tmp/picgen"
+  output_directory: "/tmp/picgen",
+  reference_images: []
 };
 
 describe("generation confirmation", () => {
@@ -23,6 +24,7 @@ describe("generation confirmation", () => {
     expect(formatGenerationPreview(plan)).toContain("Provider: openai_official (openai-images)");
     expect(formatGenerationPreview(plan)).toContain("Model: gpt-image-2");
     expect(formatGenerationPreview(plan)).toContain("Images: 2");
+    expect(formatGenerationPreview(plan)).toContain("Reference images: 0");
     expect(formatGenerationPreview(plan)).toContain("Output: /tmp/picgen");
   });
 

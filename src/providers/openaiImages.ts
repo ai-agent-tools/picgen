@@ -58,6 +58,12 @@ export class OpenAIImagesAdapter {
 }
 
 export function buildOpenAIImagesRequest(plan: ResolvedGenerationPlan): Record<string, unknown> {
+  if (plan.referenceImages.length > 0) {
+    throw new Error(
+      "Reference images are not supported by the openai-images generation adapter yet. Use a Gemini provider for reference-image generation."
+    );
+  }
+
   return removeUndefined({
     model: plan.model,
     prompt: plan.prompt,

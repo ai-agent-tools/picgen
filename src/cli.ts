@@ -39,6 +39,7 @@ program
   .option("--mode <name>", "Mode name.")
   .option("--model <name>", "Model name.")
   .option("--out-dir <path>", "Output directory.")
+  .option("--reference <path>", "Reference image path. Can be repeated.", collectOption, [])
   .option("--json", "Print machine-readable JSON.")
   .option("-y, --yes", "Skip confirmation for real generation.")
   .action(runCreate);
@@ -90,3 +91,7 @@ program.parseAsync().catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : String(error));
   process.exitCode = 1;
 });
+
+function collectOption(value: string, previous: string[]): string[] {
+  return [...previous, value];
+}

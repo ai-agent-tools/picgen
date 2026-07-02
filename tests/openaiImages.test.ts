@@ -50,6 +50,23 @@ describe("OpenAI images adapter", () => {
     });
   });
 
+  it("rejects reference images until the edit adapter is implemented", () => {
+    const planWithReference = {
+      ...plan,
+      referenceImages: [
+        {
+          path: "/tmp/reference.png",
+          mime_type: "image/png",
+          bytes: 123
+        }
+      ]
+    };
+
+    expect(() => buildOpenAIImagesRequest(planWithReference)).toThrow(
+      "Reference images are not supported by the openai-images generation adapter yet."
+    );
+  });
+
   it("extracts b64 and URL image outputs", () => {
     expect(
       extractOpenAIImages({

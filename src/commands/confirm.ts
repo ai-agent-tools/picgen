@@ -31,6 +31,7 @@ export function formatGenerationPreview(plan: GenerationPlanOutput): string {
     `Model: ${plan.model}`,
     `Preset: ${plan.preset}`,
     `Images: ${plan.n}`,
+    `Reference images: ${plan.reference_images.length}`,
     `Aspect ratio: ${plan.aspect_ratio}`,
     `Output: ${plan.output_directory}`
   ].join("\n");

@@ -1,5 +1,6 @@
 import YAML from "yaml";
 import { createGenerationRun, writeGenerationMetadata } from "../assets/output.js";
+import { resolveReferenceImages } from "../assets/reference.js";
 import { loadConfig } from "../config/store.js";
 import { getAdapter } from "../providers/adapters.js";
 import { resolveGenerationPlan } from "../routing/resolve.js";
@@ -13,6 +14,7 @@ export interface CreateOptions {
   mode?: string;
   model?: string;
   outDir?: string;
+  reference?: string[];
   json?: boolean;
   yes?: boolean;
 }
@@ -31,6 +33,11 @@ export interface GenerationPlanOutput {
   n: number;
   output_format: string;
   output_directory: string;
+  reference_images: Array<{
+    path: string;
+    mime_type: string;
+    bytes: number;
+  }>;
 }
 
 export async function runCreate(promptParts: string[], options: CreateOptions): Promise<void> {
@@ -40,13 +47,15 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
   }
 
   const config = await loadConfig();
+  const referenceImages = await resolveReferenceImages(options.reference ?? []);
   const plan = resolveGenerationPlan(config, {
     prompt,
     presetName: options.preset,
     providerName: options.provider,
     modeName: options.mode,
     model: options.model,
-    outputDirectory: options.outDir
+    outputDirectory: options.outDir,
+    referenceImages
   });
 
   const planOutput = toPlanOutput(plan);
@@ -167,6 +176,11 @@ export function toPlanOutput(plan: ResolvedGenerationPlan): GenerationPlanOutput
     quality: plan.preset.quality,
     n: plan.preset.n,
     output_format: plan.preset.output_format,
-    output_directory: plan.outputDirectory
+    output_directory: plan.outputDirectory,
+    reference_images: plan.referenceImages.map((image) => ({
+      path: image.path,
+      mime_type: image.mime_type,
+      bytes: image.bytes
+    }))
   };
 }

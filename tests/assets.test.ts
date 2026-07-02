@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   createGenerationRun,
+  redactGenerationMetadata,
   writeGenerationMetadata,
   writeProviderImage,
   writeProviderImages
@@ -54,6 +55,55 @@ describe("generation output assets", () => {
     const metadata = JSON.parse(await readFile(run.metadataPath, "utf8"));
     expect(metadata.run.id).toBe(run.id);
     expect(metadata.plan.prompt).toBe("test prompt");
+  });
+
+  it("redacts provider image data in metadata", () => {
+    expect(
+      redactGenerationMetadata({
+        plan: { prompt: "test prompt" },
+        run: {
+          id: "run",
+          output_directory: "/tmp/out",
+          metadata_path: "/tmp/out/metadata.json",
+          prompt_path: "/tmp/out/prompt.txt"
+        },
+        provider_response: {
+          data: [{ b64_json: "abc123" }],
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    inlineData: {
+                      mimeType: "image/png",
+                      data: "def456"
+                    },
+                    thoughtSignature: "ghi789"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }).provider_response
+    ).toEqual({
+      data: [{ b64_json: "[redacted provider data: 6 chars]" }],
+      candidates: [
+        {
+          content: {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: "image/png",
+                  data: "[redacted provider data: 6 chars]"
+                },
+                thoughtSignature: "[redacted provider data: 6 chars]"
+              }
+            ]
+          }
+        }
+      ]
+    });
   });
 
   it("writes base64 image data to a local file", async () => {
