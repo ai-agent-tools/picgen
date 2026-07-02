@@ -56,11 +56,53 @@ describe("resolveGenerationPlan", () => {
       default_mode: "balanced",
       provider_priority: ["gemini_official", "openai_official"]
     };
+    delete (legacyConfig as unknown as { providers: Record<string, { capabilities?: unknown }> })
+      .providers.openai_official.capabilities;
+    delete (legacyConfig as unknown as { providers: Record<string, { capabilities?: unknown }> })
+      .providers.gemini_official.capabilities;
 
     const parsed = picgenConfigSchema.parse(legacyConfig);
 
     expect(parsed.routing.default_provider).toBe("gemini_official");
     expect(parsed.routing.fallback_providers).toEqual(["openai_official"]);
+    expect(parsed.providers.openai_official.capabilities).toEqual(["text-to-image"]);
+    expect(parsed.providers.gemini_official.capabilities).toEqual([
+      "text-to-image",
+      "reference-image"
+    ]);
+  });
+
+  it("routes reference-image requests to a capable fallback provider", () => {
+    const plan = resolveGenerationPlan(defaultConfig, {
+      prompt: "test",
+      presetName: "poster",
+      referenceImages: [
+        {
+          path: "/tmp/reference.png",
+          mime_type: "image/png",
+          bytes: 123
+        }
+      ]
+    });
+
+    expect(plan.providerName).toBe("gemini_official");
+    expect(plan.provider.capabilities).toContain("reference-image");
+  });
+
+  it("rejects explicit providers that do not support reference images", () => {
+    expect(() =>
+      resolveGenerationPlan(defaultConfig, {
+        prompt: "test",
+        providerName: "openai_official",
+        referenceImages: [
+          {
+            path: "/tmp/reference.png",
+            mime_type: "image/png",
+            bytes: 123
+          }
+        ]
+      })
+    ).toThrow('Provider "openai_official" does not support reference-image.');
   });
 
   it("builds an agent-friendly plan output", () => {

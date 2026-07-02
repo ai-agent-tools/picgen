@@ -38,6 +38,8 @@ picgen create --provider gemini_official --reference ./reference.png --preset po
 
 Use Gemini providers for reference-image generation in Alpha. The OpenAI-compatible `/v1/images/generations` adapter does not support reference images yet.
 
+PicGen routes by provider capabilities. When reference images are provided, agents may omit `--provider` and let PicGen select a provider that supports `reference-image`, unless the user explicitly requested a provider.
+
 ## Preferences and Overrides
 
 Treat `picgen create` flags as one-off overrides. They must not change user preferences:

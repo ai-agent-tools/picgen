@@ -31,6 +31,7 @@ PicGen uses four layers:
 - `mode`: model preference such as fast, balanced, or premium
 - `preset`: usage defaults such as poster, product shot, social cover
 - `routing`: default provider, fallback providers, and default mode
+- `capability`: whether a provider supports text-to-image, reference-image, or future workflows
 
 Users should not need to provide model, resolution, aspect ratio, or quality on every request. Setup and presets hold those choices.
 
@@ -48,6 +49,7 @@ Disabled providers remain in config but are skipped by automatic routing.
 
 Provider `base_url` values are host-only. Users should not include `/v1` or `/v1beta`; protocol adapters append those paths internally.
 Providers may optionally define `test_model` for health checks. This avoids hard-coding short-lived model names while still allowing lightweight connectivity tests.
+Providers define `capabilities` so routing can skip unsupported providers. Old configs infer capabilities from protocol defaults.
 
 ## Agent Invocation Policy
 

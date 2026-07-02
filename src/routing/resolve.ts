@@ -1,6 +1,11 @@
 import { join } from "node:path";
 import { cwd } from "node:process";
-import type { PicgenConfig, ReferenceImage, ResolvedGenerationPlan } from "../types.js";
+import type {
+  PicgenConfig,
+  ProviderCapability,
+  ReferenceImage,
+  ResolvedGenerationPlan
+} from "../types.js";
 
 export interface ResolveOptions {
   prompt: string;
@@ -31,10 +36,16 @@ export function resolveGenerationPlan(
   const providerCandidates = options.providerName
     ? [options.providerName]
     : [config.routing.default_provider, ...config.routing.fallback_providers];
+  const requiredCapability = requiredCapabilityForOptions(options);
+  const unsupportedProviders: string[] = [];
 
   for (const providerName of providerCandidates) {
     const provider = config.providers[providerName];
     if (!provider || !provider.enabled) continue;
+    if (!provider.capabilities.includes(requiredCapability)) {
+      unsupportedProviders.push(providerName);
+      continue;
+    }
 
     const modelCandidates = options.model ? [options.model] : mode.preferred_models;
     const model = modelCandidates.find((candidate) => provider.models.includes(candidate));
@@ -53,7 +64,19 @@ export function resolveGenerationPlan(
     };
   }
 
+  if (options.providerName && unsupportedProviders.includes(options.providerName)) {
+    throw new Error(
+      `Provider "${options.providerName}" does not support ${requiredCapability}.`
+    );
+  }
+
   throw new Error(
-    `No enabled provider can satisfy preset "${presetName}" with mode "${modeName}".`
+    `No enabled provider can satisfy preset "${presetName}" with mode "${modeName}" and capability "${requiredCapability}".`
   );
+}
+
+function requiredCapabilityForOptions(options: ResolveOptions): ProviderCapability {
+  return options.referenceImages && options.referenceImages.length > 0
+    ? "reference-image"
+    : "text-to-image";
 }

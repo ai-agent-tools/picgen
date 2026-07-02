@@ -15,7 +15,7 @@ export async function listProviders(): Promise<void> {
           ? "fallback"
           : "manual";
     console.log(
-      `${name}\t${provider.enabled ? "enabled" : "disabled"}\t${preference}\t${provider.protocol}\t${provider.channel}\t${provider.models.join(",")}`
+      `${name}\t${provider.enabled ? "enabled" : "disabled"}\t${preference}\t${provider.protocol}\t${provider.channel}\t${provider.capabilities.join(",")}\t${provider.models.join(",")}`
     );
   }
 }
@@ -178,7 +178,8 @@ async function promptProvider(
       models: modelsRaw
         .split(",")
         .map((model) => model.trim())
-        .filter(Boolean)
+        .filter(Boolean),
+      capabilities: defaultCapabilitiesForProtocol(protocol)
     }
   };
 }
@@ -189,4 +190,10 @@ function nextAvailableName(config: PicgenConfig, baseName: string, existingName?
   let index = 2;
   while (config.providers[`${baseName}_${index}`]) index += 1;
   return `${baseName}_${index}`;
+}
+
+function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConfig["capabilities"] {
+  return protocol === "gemini"
+    ? ["text-to-image", "reference-image"]
+    : ["text-to-image"];
 }

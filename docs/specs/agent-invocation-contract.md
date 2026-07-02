@@ -24,6 +24,7 @@ The PicGen CLI is responsible for:
 
 - Loading user preferences and config.
 - Resolving provider, model, mode, preset, and output settings.
+- Matching the request to provider capabilities such as `text-to-image` and `reference-image`.
 - Producing dry-run plans without calling providers.
 - Calling providers for real generation.
 - Downloading, decoding, and saving generated images as local files.
@@ -128,6 +129,15 @@ Initial setup should not require users to understand resolution, aspect ratio, q
 Provider `base_url` values should be host-only. Users should not include `/v1` or `/v1beta`; PicGen appends protocol-specific paths internally.
 
 Provider health checks may use a lightweight `test_model`. Gemini provider tests should use a text-only `generateContent` request so health checks validate connectivity without triggering image generation.
+
+Providers should expose capabilities. At minimum:
+
+- `text-to-image`: can generate from a text prompt.
+- `reference-image`: can use one or more local images as generation references.
+
+If capabilities are omitted from older configs, PicGen should infer defaults from the protocol. Gemini supports both `text-to-image` and `reference-image`; OpenAI-compatible `/v1/images/generations` supports `text-to-image` only.
+
+Routing should skip providers that do not support the capability required by the request. If the user explicitly selects an unsupported provider, PicGen should fail clearly instead of silently ignoring the unsupported input.
 
 ## Reference Images
 

@@ -75,4 +75,6 @@ Provider `base_url` values should be host-only. Do not include `/v1` or `/v1beta
 
 Providers may optionally set `test_model` in `~/.picgen/config.yaml` when health checks should use a lightweight model instead of the first generation model.
 
+Providers expose capabilities such as `text-to-image` and `reference-image`. Old configs that omit capabilities are upgraded in memory from the provider protocol: Gemini supports both text and reference-image generation, while OpenAI-compatible `/v1/images/generations` supports text-to-image only.
+
 Generated image data and provider-only fields such as base64 image payloads and Gemini thought signatures are redacted from metadata. PicGen keeps the generated assets as local image files and keeps stdout compact for agent workflows.

@@ -32,6 +32,7 @@ PicGen CLI 负责执行和资产管理：
 
 - 读取配置和用户偏好。
 - 解析 preset、mode、provider、model。
+- 根据请求匹配 provider capability，例如 `text-to-image` 和 `reference-image`。
 - 生成 dry-run plan。
 - 调用 provider。
 - 下载、解码并保存图片到本地。
@@ -176,6 +177,15 @@ PicGen 面向非技术用户，setup 应尽量少问问题。
 provider 的 `base_url` 应只配置 host，不要包含 `/v1` 或 `/v1beta`。PicGen 会根据协议自动拼接路径。
 
 provider 探测可以使用较轻量的 `test_model`。Gemini provider 探测应使用文本请求验证 host、key、model 和 POST 路径，不应触发真实生图。
+
+provider 应声明能力 capability，至少包括：
+
+- `text-to-image`：支持根据文本 prompt 生图。
+- `reference-image`：支持使用一张或多张本地图片作为生成参考。
+
+如果老配置没有写 capabilities，PicGen 应根据协议推断默认值。Gemini 默认支持 `text-to-image` 和 `reference-image`；OpenAI-compatible `/v1/images/generations` 默认只支持 `text-to-image`。
+
+路由时应跳过不支持当前请求能力的 provider。如果用户显式指定了不支持的 provider，PicGen 应给出清晰错误，不要静默忽略用户传入的参考图。
 
 ## 参考图输入
 

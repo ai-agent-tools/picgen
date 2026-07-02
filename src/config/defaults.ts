@@ -14,7 +14,8 @@ export const defaultConfig: PicgenConfig = {
       channel: "official",
       base_url: "https://api.openai.com",
       api_key_env: "OPENAI_API_KEY",
-      models: ["gpt-image-2"]
+      models: ["gpt-image-2"],
+      capabilities: ["text-to-image"]
     },
     gemini_official: {
       enabled: true,
@@ -22,7 +23,8 @@ export const defaultConfig: PicgenConfig = {
       channel: "official",
       base_url: "https://generativelanguage.googleapis.com",
       api_key_env: "GEMINI_API_KEY",
-      models: ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"]
+      models: ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"],
+      capabilities: ["text-to-image", "reference-image"]
     }
   },
   modes: {

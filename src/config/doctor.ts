@@ -18,6 +18,7 @@ export function inspectProviders(config: PicgenConfig): DoctorProviderResult[] {
       api_key_env: provider.api_key_env,
       has_api_key: hasApiKey,
       models: provider.models,
+      capabilities: provider.capabilities,
       status
     };
   });

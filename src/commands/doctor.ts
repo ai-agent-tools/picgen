@@ -34,7 +34,7 @@ export async function runDoctor(options: { json?: boolean }): Promise<void> {
   console.log("Providers:");
   for (const provider of providers) {
     console.log(
-      `- ${provider.name} [${provider.protocol}] ${provider.status} key=${provider.api_key_env} models=${provider.models.join(", ")}`
+      `- ${provider.name} [${provider.protocol}] ${provider.status} key=${provider.api_key_env} capabilities=${provider.capabilities.join(", ")} models=${provider.models.join(", ")}`
     );
   }
 

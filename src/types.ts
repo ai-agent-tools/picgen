@@ -2,6 +2,7 @@ export type Protocol = "openai-images" | "gemini";
 export type Channel = "official" | "third_party";
 export type ModeName = "fast" | "balanced" | "premium" | string;
 export type OutputFormat = "png" | "jpeg" | "webp";
+export type ProviderCapability = "text-to-image" | "reference-image";
 
 export interface ProviderConfig {
   enabled: boolean;
@@ -11,6 +12,7 @@ export interface ProviderConfig {
   api_key_env: string;
   models: string[];
   test_model?: string;
+  capabilities: ProviderCapability[];
 }
 
 export interface ModeConfig {
@@ -106,5 +108,6 @@ export interface DoctorProviderResult {
   api_key_env: string;
   has_api_key: boolean;
   models: string[];
+  capabilities: ProviderCapability[];
   status: "ok" | "disabled" | "missing_api_key";
 }
