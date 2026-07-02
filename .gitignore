@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+.picgen/
+outputs/
+*.log
+.DS_Store

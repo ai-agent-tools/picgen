@@ -1,0 +1,84 @@
+# PicGen Alpha Proposal
+
+PicGen is a lightweight image generation connector for AI agents. It lets users generate images from the current agent context through their own providers, API keys, and quota.
+
+## Scope
+
+Alpha focuses only on image generation:
+
+- OpenAI-compatible `/v1/images/generations`
+- Gemini image API
+- local CLI
+- local Codex skill
+- provider lifecycle management
+- dry-run planning before paid generation
+
+Out of scope for Alpha:
+
+- video generation
+- audio generation
+- GUI configuration
+- provider marketplace
+- full Codex plugin packaging
+- real image editing and variations
+
+## Configuration Model
+
+PicGen uses four layers:
+
+- `provider`: where requests go, including official or third-party channels
+- `mode`: model preference such as fast, balanced, or premium
+- `preset`: usage defaults such as poster, product shot, social cover
+- `routing`: default provider, fallback providers, and default mode
+
+Users should not need to provide model, resolution, aspect ratio, or quality on every request. Setup and presets hold those choices.
+
+## Provider Lifecycle
+
+Providers can be managed repeatedly after initial setup:
+
+```text
+add -> test -> enable/disable -> edit -> remove
+```
+
+Disabled providers remain in config but are skipped by automatic routing.
+
+## Agent Invocation Policy
+
+PicGen should be visible to agents, but should not silently spend quota.
+
+- Explicit image generation request: call PicGen directly.
+- Strong visual-output intent: ask for confirmation first.
+- Weak visual discussion: suggest PicGen, do not call.
+
+Use `picgen create --dry-run` to show the planned provider, model, preset, aspect ratio, quantity, and prompt before generation.
+
+## Alpha Commands
+
+```bash
+picgen setup
+picgen doctor --json
+picgen create --dry-run "一张产品发布会主视觉"
+picgen provider list
+picgen provider add
+picgen provider prefer <name>
+picgen provider enable <name>
+picgen provider disable <name>
+picgen provider remove <name>
+picgen mode prefer <name>
+picgen preset prefer <name>
+```
+
+## Current Status
+
+The repository currently implements:
+
+- TypeScript CLI skeleton
+- default config and schema validation
+- interactive provider add/edit flow
+- provider enable/disable/remove/list
+- doctor JSON output
+- dry-run generation planning
+- routing tests
+
+Real provider calls are intentionally not implemented yet.
