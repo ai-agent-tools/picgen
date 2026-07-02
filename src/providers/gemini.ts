@@ -84,8 +84,7 @@ export function buildGeminiGenerateContentRequest(
       }
     ],
     generationConfig: {
-      responseModalities: ["IMAGE"],
-      responseMimeType: mimeTypeForOutputFormat(plan.preset.output_format)
+      responseModalities: ["TEXT", "IMAGE"]
     }
   };
 }
@@ -132,18 +131,6 @@ function normalizeInlineData(
     data: inlineData.data,
     mimeType: inlineData.mime_type
   };
-}
-
-function mimeTypeForOutputFormat(outputFormat: string): string {
-  switch (outputFormat) {
-    case "jpeg":
-      return "image/jpeg";
-    case "webp":
-      return "image/webp";
-    case "png":
-    default:
-      return "image/png";
-  }
 }
 
 async function readJsonResponse(response: Response): Promise<GeminiGenerateContentResponse> {

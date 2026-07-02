@@ -62,8 +62,7 @@ describe("Gemini generateContent adapter", () => {
         }
       ],
       generationConfig: {
-        responseModalities: ["IMAGE"],
-        responseMimeType: "image/png"
+        responseModalities: ["TEXT", "IMAGE"]
       }
     });
   });
