@@ -6,9 +6,13 @@
   "bin": {
     "picgen": "./dist/cli.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist",
     "skills",
+    "docs",
     "examples",
     "README.md"
   ],
