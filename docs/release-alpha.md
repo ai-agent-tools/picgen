@@ -57,6 +57,12 @@ GEMINI_API_KEY=...
 picgen doctor --json
 ```
 
+6. Check whether a newer PicGen version is available:
+
+```bash
+picgen update check
+```
+
 ## Safe Preview
 
 Always start with dry-run:
@@ -156,4 +162,10 @@ Publish when ready:
 
 ```bash
 npm publish --otp <code>
+```
+
+After publishing, ask trial users to upgrade with:
+
+```bash
+npm install -g @ai-agent-tools/picgen@latest
 ```

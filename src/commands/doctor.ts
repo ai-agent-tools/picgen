@@ -1,5 +1,7 @@
 import { getConfigPath, loadConfig } from "../config/store.js";
 import { inspectProviders } from "../config/doctor.js";
+import { maybePrintUpdateHint } from "./update.js";
+import { VERSION } from "../version.js";
 
 export async function runDoctor(options: { json?: boolean }): Promise<void> {
   const config = await loadConfig();
@@ -11,6 +13,7 @@ export async function runDoctor(options: { json?: boolean }): Promise<void> {
       JSON.stringify(
         {
           configured,
+          version: VERSION,
           config_path: getConfigPath(),
           default_preset: config.default_preset,
           default_mode: config.routing.default_mode,
@@ -26,6 +29,7 @@ export async function runDoctor(options: { json?: boolean }): Promise<void> {
   }
 
   console.log(`Config: ${getConfigPath()}`);
+  console.log(`Version: ${VERSION}`);
   console.log(`Default preset: ${config.default_preset}`);
   console.log(`Default mode: ${config.routing.default_mode}`);
   console.log(`Default provider: ${config.routing.default_provider}`);
@@ -42,4 +46,6 @@ export async function runDoctor(options: { json?: boolean }): Promise<void> {
     console.log("");
     console.log("No usable provider found. Run `picgen setup` or set the API key env vars above.");
   }
+
+  await maybePrintUpdateHint();
 }

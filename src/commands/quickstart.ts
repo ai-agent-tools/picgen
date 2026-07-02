@@ -1,5 +1,8 @@
-export function runQuickstart(): void {
+import { maybePrintUpdateHint } from "./update.js";
+
+export async function runQuickstart(): Promise<void> {
   console.log(formatQuickstart());
+  await maybePrintUpdateHint();
 }
 
 export function formatQuickstart(): string {

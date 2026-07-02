@@ -44,6 +44,7 @@ For first-user rollout, see [docs/release-alpha.md](./docs/release-alpha.md).
 ```bash
 picgen setup
 picgen quickstart
+picgen update check
 picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
 picgen create --yes "一张产品发布会主视觉"
@@ -103,3 +104,17 @@ Providers may optionally set `test_model` in `~/.picgen/config.yaml` when health
 Providers expose capabilities such as `text-to-image` and `reference-image`. Old configs that omit capabilities are upgraded in memory from the provider protocol: Gemini supports both text and reference-image generation, while OpenAI-compatible `/v1/images/generations` supports text-to-image only.
 
 Generated image data and provider-only fields such as base64 image payloads and Gemini thought signatures are redacted from metadata. PicGen keeps the generated assets as local image files and keeps stdout compact for agent workflows.
+
+## Updates
+
+Check npm for the latest PicGen version:
+
+```bash
+picgen update check
+```
+
+`picgen doctor` and `picgen quickstart` may show a lightweight update hint. PicGen caches update checks for 24 hours. Disable update checks with:
+
+```bash
+PICGEN_DISABLE_UPDATE_CHECK=1 picgen doctor
+```

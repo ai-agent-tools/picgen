@@ -14,13 +14,15 @@ import {
 import { preferMode, preferPreset } from "./commands/preferences.js";
 import { runQuickstart } from "./commands/quickstart.js";
 import { runSetup } from "./commands/setup.js";
+import { runUpdateCheck } from "./commands/update.js";
+import { VERSION } from "./version.js";
 
 const program = new Command();
 
 program
   .name("picgen")
   .description("Lightweight image generation connector for AI agents.")
-  .version("0.1.0-alpha.0");
+  .version(VERSION);
 
 program.command("setup").description("Run the interactive PicGen setup wizard.").action(runSetup);
 
@@ -94,6 +96,14 @@ program
   .argument("<name>")
   .description("Set the default preset preference.")
   .action(preferPreset);
+
+program
+  .command("update")
+  .description("Manage PicGen updates.")
+  .command("check")
+  .description("Check whether a newer PicGen version is available.")
+  .option("--json", "Print machine-readable JSON.")
+  .action(runUpdateCheck);
 
 program.parseAsync().catch((error: unknown) => {
   console.error(error instanceof Error ? error.message : String(error));
