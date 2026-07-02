@@ -1,4 +1,5 @@
 import { writeProviderImages } from "../assets/output.js";
+import { buildGeminiProtocolUrl } from "./urls.js";
 import type {
   GenerationRun,
   ProviderGenerationResult,
@@ -115,8 +116,7 @@ export function extractGeminiImages(
 }
 
 export function buildGeminiGenerateContentUrl(baseUrl: string, model: string): string {
-  const trimmedBaseUrl = baseUrl.replace(/\/+$/, "");
-  return `${trimmedBaseUrl}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  return buildGeminiProtocolUrl(baseUrl, `models/${encodeURIComponent(model)}:generateContent`);
 }
 
 function normalizeInlineData(

@@ -1,4 +1,5 @@
 import type { ProviderConfig, Protocol } from "../types.js";
+import { buildGeminiProtocolUrl, buildOpenAIProtocolUrl } from "./urls.js";
 
 export interface ProviderTestResult {
   ok: boolean;
@@ -95,7 +96,7 @@ async function testOpenAICompatibleProvider(
   apiKey: string,
   model: string
 ): Promise<Response> {
-  return fetch(`${provider.base_url.replace(/\/+$/, "")}/models/${encodeURIComponent(model)}`, {
+  return fetch(buildOpenAIProtocolUrl(provider.base_url, `models/${encodeURIComponent(model)}`), {
     method: "GET",
     headers: {
       Authorization: `Bearer ${apiKey}`
@@ -108,7 +109,7 @@ async function testGeminiProvider(
   apiKey: string,
   model: string
 ): Promise<Response> {
-  return fetch(`${provider.base_url.replace(/\/+$/, "")}/v1beta/models/${encodeURIComponent(model)}`, {
+  return fetch(buildGeminiProtocolUrl(provider.base_url, `models/${encodeURIComponent(model)}`), {
     method: "GET",
     headers: {
       "x-goog-api-key": apiKey

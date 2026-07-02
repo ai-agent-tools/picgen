@@ -12,7 +12,7 @@ export const defaultConfig: PicgenConfig = {
       enabled: true,
       protocol: "openai-images",
       channel: "official",
-      base_url: "https://api.openai.com/v1",
+      base_url: "https://api.openai.com",
       api_key_env: "OPENAI_API_KEY",
       models: ["gpt-image-2"]
     },

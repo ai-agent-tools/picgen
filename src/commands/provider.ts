@@ -2,6 +2,7 @@ import { input, select } from "@inquirer/prompts";
 import { setPreferredProvider } from "../config/preferences.js";
 import { loadConfig, saveConfig } from "../config/store.js";
 import { testProvider } from "../providers/health.js";
+import { defaultProviderBaseUrl, normalizeProviderBaseUrl } from "../providers/urls.js";
 import type { Channel, PicgenConfig, Protocol, ProviderConfig } from "../types.js";
 
 export async function listProviders(): Promise<void> {
@@ -140,12 +141,8 @@ async function promptProvider(
   });
 
   const baseUrl = await input({
-    message: "Base URL",
-    default:
-      existing?.base_url ??
-      (protocol === "openai-images"
-        ? "https://api.openai.com/v1"
-        : "https://generativelanguage.googleapis.com")
+    message: "Provider host URL (do not include /v1 or /v1beta)",
+    default: existing?.base_url ?? defaultProviderBaseUrl(protocol)
   });
 
   const apiKeyEnv = await input({
@@ -176,7 +173,7 @@ async function promptProvider(
       enabled: existing?.enabled ?? true,
       protocol,
       channel,
-      base_url: baseUrl,
+      base_url: normalizeProviderBaseUrl(baseUrl),
       api_key_env: apiKeyEnv,
       models: modelsRaw
         .split(",")

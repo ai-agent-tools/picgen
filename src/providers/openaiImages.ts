@@ -1,4 +1,5 @@
 import { writeProviderImages } from "../assets/output.js";
+import { buildOpenAIProtocolUrl } from "./urls.js";
 import type {
   GenerationRun,
   ProviderImageOutput,
@@ -95,7 +96,7 @@ export function extractOpenAIImages(response: OpenAIImagesResponse): ProviderIma
 }
 
 function buildOpenAIImagesUrl(baseUrl: string): string {
-  return `${baseUrl.replace(/\/+$/, "")}/images/generations`;
+  return buildOpenAIProtocolUrl(baseUrl, "images/generations");
 }
 
 function mapOpenAIImageSize(aspectRatio: string, size: string): string | undefined {

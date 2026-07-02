@@ -56,6 +56,7 @@ Users should not need to provide model, resolution, aspect ratio, quality, or pr
 
 `picgen setup` is a repeatable configuration entry point, not a one-time initializer.
 It should guide non-technical users through default provider selection, default generation preference, provider testing, and provider addition without asking for resolution or quality details up front.
+Provider host URLs should be configured without `/v1` or `/v1beta`; PicGen appends protocol paths internally.
 
 Support provider lifecycle commands:
 
