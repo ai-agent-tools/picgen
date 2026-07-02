@@ -1,5 +1,6 @@
 import { input, select } from "@inquirer/prompts";
 import { loadConfig, saveConfig } from "../config/store.js";
+import { testProvider } from "../providers/health.js";
 import type { Channel, PicgenConfig, Protocol, ProviderConfig } from "../types.js";
 
 export async function listProviders(): Promise<void> {
@@ -88,6 +89,26 @@ export async function preferProvider(name: string): Promise<void> {
 
   await saveConfig(config);
   console.log(`Preferred provider: ${name}`);
+}
+
+export async function runProviderTest(
+  name: string,
+  options: { json?: boolean }
+): Promise<void> {
+  const config = await loadConfig();
+  const provider = config.providers[name];
+  if (!provider) throw new Error(`Unknown provider: ${name}`);
+
+  const result = await testProvider(name, provider);
+  if (options.json) {
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
+  console.log(`${result.ok ? "OK" : "FAILED"} ${result.name} [${result.protocol}]`);
+  console.log(result.message);
+  if (result.model) console.log(`Model: ${result.model}`);
+  if (result.http_status) console.log(`HTTP status: ${result.http_status}`);
 }
 
 async function promptProvider(

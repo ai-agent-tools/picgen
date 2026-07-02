@@ -73,6 +73,7 @@ Implemented:
 - CLI skeleton
 - Config schema and defaults
 - Provider list/add/edit/enable/disable/remove
+- Provider `test` network checks
 - Provider/mode/preset preference commands
 - Doctor JSON output
 - Dry-run generation planning
@@ -84,7 +85,6 @@ Implemented:
 
 Not implemented yet:
 
-- Provider `test` network checks
 - Keychain-backed API key storage
 - Full plugin packaging
 

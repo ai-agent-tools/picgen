@@ -61,6 +61,7 @@ picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
 picgen provider list
 picgen provider add
+picgen provider test <name>
 picgen provider prefer <name>
 picgen provider enable <name>
 picgen provider disable <name>
@@ -77,6 +78,7 @@ The repository currently implements:
 - default config and schema validation
 - interactive provider add/edit flow
 - provider enable/disable/remove/list
+- provider test network checks
 - provider/mode/preset preference commands
 - doctor JSON output
 - dry-run generation planning
@@ -85,4 +87,4 @@ The repository currently implements:
 - Gemini generateContent image generation call
 - routing tests
 
-Provider `test` network checks and keychain-backed API key storage are not implemented yet.
+Keychain-backed API key storage and full plugin packaging are not implemented yet.

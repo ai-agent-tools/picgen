@@ -30,6 +30,7 @@ picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
 picgen provider list
 picgen provider add
+picgen provider test openai_official --json
 picgen provider prefer gemini_official
 picgen provider disable gemini_proxy
 picgen provider remove gemini_proxy

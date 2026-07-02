@@ -7,6 +7,7 @@ import {
   listProviders,
   preferProvider,
   removeProvider,
+  runProviderTest,
   setProviderEnabled
 } from "./commands/provider.js";
 import { preferMode, preferPreset } from "./commands/preferences.js";
@@ -44,6 +45,12 @@ const provider = program.command("provider").description("Manage providers/chann
 provider.command("list").description("List providers.").action(listProviders);
 provider.command("add").description("Add a provider.").action(addProvider);
 provider.command("edit").argument("<name>").description("Edit a provider.").action(editProvider);
+provider
+  .command("test")
+  .argument("<name>")
+  .description("Test provider connectivity without generating an image.")
+  .option("--json", "Print machine-readable JSON.")
+  .action(runProviderTest);
 provider
   .command("prefer")
   .argument("<name>")
