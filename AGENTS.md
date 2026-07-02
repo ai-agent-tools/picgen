@@ -53,6 +53,7 @@ Users should not need to provide model, resolution, aspect ratio, quality, or pr
 ## CLI Behavior
 
 `picgen setup` is a repeatable configuration entry point, not a one-time initializer.
+It should guide non-technical users through default provider selection, default generation preference, provider testing, and provider addition without asking for resolution or quality details up front.
 
 Support provider lifecycle commands:
 

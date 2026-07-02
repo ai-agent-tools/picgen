@@ -4,6 +4,11 @@ import { tmpdir } from "node:os";
 import YAML from "yaml";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defaultConfig } from "../src/config/defaults.js";
+import {
+  setPreferredMode,
+  setPreferredPreset,
+  setPreferredProvider
+} from "../src/config/preferences.js";
 import { saveConfig } from "../src/config/store.js";
 import { preferProvider } from "../src/commands/provider.js";
 import { preferMode, preferPreset } from "../src/commands/preferences.js";
@@ -29,6 +34,25 @@ afterEach(async () => {
 });
 
 describe("preference commands", () => {
+  it("updates provider preference in memory", () => {
+    const config = structuredClone(defaultConfig);
+
+    setPreferredProvider(config, "gemini_official");
+
+    expect(config.routing.default_provider).toBe("gemini_official");
+    expect(config.routing.fallback_providers).toEqual(["openai_official"]);
+  });
+
+  it("updates mode and preset preferences in memory", () => {
+    const config = structuredClone(defaultConfig);
+
+    setPreferredMode(config, "premium");
+    setPreferredPreset(config, "poster");
+
+    expect(config.routing.default_mode).toBe("premium");
+    expect(config.default_preset).toBe("poster");
+  });
+
   it("sets the preferred provider and keeps the previous default as fallback", async () => {
     await saveConfig(structuredClone(defaultConfig));
 

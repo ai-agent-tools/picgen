@@ -43,6 +43,8 @@ add -> test -> enable/disable -> edit -> remove
 
 Disabled providers remain in config but are skipped by automatic routing.
 
+`picgen setup` is a repeatable guided entry point. It should help users choose the default provider, choose a default generation preference, test providers, and add providers without requiring them to understand resolution, aspect ratio, quality, or protocol details.
+
 ## Agent Invocation Policy
 
 PicGen should be visible to agents, but should not silently spend quota.

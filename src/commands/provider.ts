@@ -1,4 +1,5 @@
 import { input, select } from "@inquirer/prompts";
+import { setPreferredProvider } from "../config/preferences.js";
 import { loadConfig, saveConfig } from "../config/store.js";
 import { testProvider } from "../providers/health.js";
 import type { Channel, PicgenConfig, Protocol, ProviderConfig } from "../types.js";
@@ -76,17 +77,7 @@ export async function removeProvider(name: string): Promise<void> {
 
 export async function preferProvider(name: string): Promise<void> {
   const config = await loadConfig();
-  if (!config.providers[name]) throw new Error(`Unknown provider: ${name}`);
-
-  const previousDefault = config.routing.default_provider;
-  config.routing.default_provider = name;
-  config.routing.fallback_providers = [
-    ...new Set([
-      previousDefault,
-      ...config.routing.fallback_providers.filter((providerName) => providerName !== name)
-    ])
-  ].filter((providerName) => providerName && providerName !== name);
-
+  setPreferredProvider(config, name);
   await saveConfig(config);
   console.log(`Preferred provider: ${name}`);
 }

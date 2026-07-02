@@ -38,6 +38,8 @@ picgen mode prefer premium
 picgen preset prefer poster
 ```
 
+`picgen setup` is repeatable. Use it to choose the default provider, choose the default generation preference, test providers, or add a new provider/channel.
+
 ## Configuration
 
 By default PicGen reads and writes:
