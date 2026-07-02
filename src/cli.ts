@@ -39,6 +39,7 @@ program
   .option("--model <name>", "Model name.")
   .option("--out-dir <path>", "Output directory.")
   .option("--json", "Print machine-readable JSON.")
+  .option("-y, --yes", "Skip confirmation for real generation.")
   .action(runCreate);
 
 const provider = program.command("provider").description("Manage providers/channels.");

@@ -54,6 +54,7 @@ PicGen should be visible to agents, but should not silently spend quota.
 - Weak visual discussion: suggest PicGen, do not call.
 
 Use `picgen create --dry-run` to show the planned provider, model, preset, aspect ratio, quantity, and prompt before generation.
+Manual CLI generation asks for confirmation before contacting a provider. `--yes` skips that confirmation for explicit user-driven calls.
 
 ## Alpha Commands
 
@@ -61,6 +62,7 @@ Use `picgen create --dry-run` to show the planned provider, model, preset, aspec
 picgen setup
 picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
+picgen create --yes "一张产品发布会主视觉"
 picgen provider list
 picgen provider add
 picgen provider test <name>

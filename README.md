@@ -28,6 +28,7 @@ npm run build
 picgen setup
 picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
+picgen create --yes "一张产品发布会主视觉"
 picgen provider list
 picgen provider add
 picgen provider test openai_official --json
@@ -39,6 +40,8 @@ picgen preset prefer poster
 ```
 
 `picgen setup` is repeatable. Use it to choose the default provider, choose the default generation preference, test providers, or add a new provider/channel.
+
+Real `picgen create` calls ask for confirmation before contacting a provider. Use `--yes` only when you want to skip that CLI confirmation.
 
 ## Configuration
 

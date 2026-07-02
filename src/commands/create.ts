@@ -3,6 +3,7 @@ import { createGenerationRun, writeGenerationMetadata } from "../assets/output.j
 import { loadConfig } from "../config/store.js";
 import { getAdapter } from "../providers/adapters.js";
 import { resolveGenerationPlan } from "../routing/resolve.js";
+import { confirmGeneration } from "./confirm.js";
 import type { ProviderGenerationResult, ResolvedGenerationPlan } from "../types.js";
 
 export interface CreateOptions {
@@ -13,6 +14,7 @@ export interface CreateOptions {
   model?: string;
   outDir?: string;
   json?: boolean;
+  yes?: boolean;
 }
 
 export interface GenerationPlanOutput {
@@ -67,6 +69,22 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
     } else {
       console.log("PicGen dry-run plan:");
       console.log(YAML.stringify(planOutput));
+    }
+    return;
+  }
+
+  const confirmation = await confirmGeneration(planOutput, { yes: options.yes });
+  if (!confirmation.confirmed) {
+    const cancelledOutput = {
+      ok: false,
+      cancelled: true,
+      provider_called: false,
+      plan: planOutput
+    };
+    if (options.json) {
+      console.log(JSON.stringify(cancelledOutput, null, 2));
+    } else {
+      console.log("Generation cancelled.");
     }
     return;
   }

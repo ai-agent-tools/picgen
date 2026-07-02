@@ -64,6 +64,7 @@ add -> test -> enable/disable -> edit -> remove
 Disabled providers should remain in config but be skipped by automatic routing. Removed providers should be deleted from config.
 
 `picgen create --dry-run` should produce a generation plan without calling any provider or spending quota.
+Manual `picgen create` should ask for confirmation before contacting a provider. `--yes` may skip CLI confirmation for explicit user-driven calls, but agent skills should still prefer dry-run plus user confirmation by default.
 
 Do not silently send user context to third-party providers. Explicit image generation requests may call PicGen directly. Strong visual-output intent should ask for confirmation first. Weak visual discussion should only suggest PicGen.
 
