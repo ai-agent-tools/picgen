@@ -82,6 +82,7 @@ The repository currently implements:
 - dry-run generation planning
 - local output asset and metadata writing
 - OpenAI-compatible image generation call
+- Gemini generateContent image generation call
 - routing tests
 
-Gemini generation and provider `test` network checks are not implemented yet.
+Provider `test` network checks and keychain-backed API key storage are not implemented yet.

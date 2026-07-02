@@ -1,4 +1,5 @@
 import type { GenerationRun, ProviderGenerationResult, ResolvedGenerationPlan } from "../types.js";
+import { GeminiAdapter } from "./gemini.js";
 import { OpenAIImagesAdapter } from "./openaiImages.js";
 
 export interface ImageProviderAdapter {
@@ -22,6 +23,10 @@ export class NotImplementedAdapter implements ImageProviderAdapter {
 export function getAdapter(protocol: "openai-images" | "gemini"): ImageProviderAdapter {
   if (protocol === "openai-images") {
     return new OpenAIImagesAdapter();
+  }
+
+  if (protocol === "gemini") {
+    return new GeminiAdapter();
   }
 
   return new NotImplementedAdapter(protocol);

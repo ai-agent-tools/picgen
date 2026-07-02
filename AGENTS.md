@@ -78,12 +78,12 @@ Implemented:
 - Dry-run generation planning
 - Local output asset and metadata writing
 - Real OpenAI-compatible image generation call
+- Real Gemini generateContent image generation call
 - Routing tests
 - Codex skill draft
 
 Not implemented yet:
 
-- Real Gemini image generation call
 - Provider `test` network checks
 - Keychain-backed API key storage
 - Full plugin packaging
