@@ -22,6 +22,7 @@ Agent 负责理解用户意图和当前上下文：
 - 判断是否应该调用 PicGen。
 - 从对话上下文提炼最终生图 prompt。
 - 选择合适的 preset，例如 `poster`、`product-shot`、`social-cover`。
+- 当用户要求基于已有图片继续、变体或参考时，传入用户指定的本地参考图。
 - 执行 dry-run 并向用户展示生成预览。
 - 在用户确认后调用真实生成。
 - 展示本地图片路径或图片预览。
@@ -36,7 +37,7 @@ PicGen CLI 负责执行和资产管理：
 - 下载、解码并保存图片到本地。
 - 归一化不同 provider 的返回结果。
 - 输出简洁结果，避免在 stdout 中输出 base64、二进制或完整 provider response。
-- 保存 metadata 以便排查和后续使用。
+- 保存 metadata 以便排查，同时避免保存大体积图片 payload。
 
 ## 调用意图分级
 
@@ -138,6 +139,7 @@ picgen create --provider gemini_official "<prompt>"
 picgen create --model gemini-3-pro-image-preview "<prompt>"
 picgen create --preset poster "<prompt>"
 picgen create --mode premium "<prompt>"
+picgen create --reference ./reference.png "<prompt>"
 ```
 
 只有显式偏好命令才修改配置，例如：
@@ -171,6 +173,27 @@ PicGen 面向非技术用户，setup 应尽量少问问题。
 
 这些由 preset 和 routing 默认值承担。用户可以在更熟悉后通过 `preset` 或单次参数覆盖。
 
+provider 的 `base_url` 应只配置 host，不要包含 `/v1` 或 `/v1beta`。PicGen 会根据协议自动拼接路径。
+
+provider 探测可以使用较轻量的 `test_model`。Gemini provider 探测应使用文本请求验证 host、key、model 和 POST 路径，不应触发真实生图。
+
+## 参考图输入
+
+当用户明确要求使用已有图片、基于某张图继续、生成变体、图生图或使用视觉参考时，Agent 可以传入本地参考图。
+
+命令模式：
+
+```bash
+picgen create --dry-run --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+picgen create --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+```
+
+`--reference` 可以重复，用于传入多张本地图片。
+
+dry-run 输出只应包含参考图路径、MIME 类型和文件大小，不应输出或展示图片 base64。
+
+Alpha 阶段参考图能力由 Gemini adapter 支持。如果当前选择的是 OpenAI-compatible `/v1/images/generations` adapter，Agent 应为本次调用切换到 Gemini provider，或说明 OpenAI-compatible 参考图能力尚未实现。不要静默忽略用户传入的参考图。
+
 ## 图片资产协议
 
 PicGen 应把不同 provider 的返回结果归一化成本地文件。
@@ -203,6 +226,24 @@ CLI 默认 stdout 只输出简洁结果：
 ```
 
 完整 provider response、调试信息和错误详情应写入 metadata 文件，不应默认打印到对话里。
+
+metadata 应脱敏 provider 返回中的大字段，例如生成图片 base64 和 Gemini thought signature。metadata 主要用于诊断；除非用户正在排查错误，Agent 不应把 provider response 展示给用户。
+
+## Provider 特定行为
+
+Gemini 真实生图应请求只返回图片：
+
+```json
+{
+  "generationConfig": {
+    "responseModalities": ["IMAGE"]
+  }
+}
+```
+
+这样返回更紧凑，也避免无关文本。Gemini provider 探测不应使用 image-only 生图请求，而应继续使用文本请求做连通性检查。
+
+Gemini 可能返回内部 thought parts 或 thought signatures。PicGen 不应向用户展示这些字段。如果响应里包含 `thought: true` 的中间图片，PicGen 只应保存非 thought 的最终输出图片。
 
 ## 图片展示与按需读取
 

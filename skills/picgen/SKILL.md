@@ -29,6 +29,15 @@ Never silently spend user quota. Do not send full conversation context to provid
 
 If the user explicitly says to generate directly or not ask for confirmation, you may skip the user-facing confirmation step. Still form a generation plan internally.
 
+For reference-image generation, pass local images with repeated `--reference <path>` flags:
+
+```bash
+picgen create --dry-run --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+picgen create --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+```
+
+Use Gemini providers for reference-image generation in Alpha. The OpenAI-compatible `/v1/images/generations` adapter does not support reference images yet.
+
 ## Preferences and Overrides
 
 Treat `picgen create` flags as one-off overrides. They must not change user preferences:
@@ -38,6 +47,7 @@ picgen create --provider gemini_official "<prompt>"
 picgen create --model gemini-3-pro-image-preview "<prompt>"
 picgen create --preset poster "<prompt>"
 picgen create --mode premium "<prompt>"
+picgen create --reference ./reference.png "<prompt>"
 ```
 
 Only change defaults when the user explicitly asks to remember a preference, such as "use Gemini by default from now on".
@@ -50,11 +60,14 @@ After generation:
 
 - Show image previews or local paths.
 - Do not paste base64, binary image data, or full provider responses into the conversation.
+- Do not read or display provider response payloads from metadata unless debugging is explicitly requested.
 - Do not automatically read, attach, analyze, or resend generated images.
 - Load generated images only when the user asks to inspect, edit, continue from, or compare them.
 - When loading is needed, load only the specific referenced image or images.
 
 Do not explain token or context management to ordinary users unless they ask.
+
+PicGen redacts generated image payloads and Gemini thought signatures from metadata, but agents should still treat metadata as diagnostics rather than user-facing content.
 
 ## Error Handling
 
@@ -63,6 +76,8 @@ If `doctor` reports no usable provider, ask the user to run `picgen setup`.
 If an API key is missing, name the required environment variable.
 
 If a provider is disabled, suggest enabling it or using a one-off provider override.
+
+If the user provides reference images with an OpenAI-compatible provider, switch to a Gemini provider for this run or explain that OpenAI-compatible reference-image support is not implemented yet.
 
 If a provider call fails, show a short error and point to the metadata or error path if available. Do not silently retry with another paid provider unless the user has approved fallback behavior.
 

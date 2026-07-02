@@ -39,7 +39,12 @@ program
   .option("--mode <name>", "Mode name.")
   .option("--model <name>", "Model name.")
   .option("--out-dir <path>", "Output directory.")
-  .option("--reference <path>", "Reference image path. Can be repeated.", collectOption, [])
+  .option(
+    "--reference <path>",
+    "Reference image path for Gemini generation. Can be repeated.",
+    collectOption,
+    []
+  )
   .option("--json", "Print machine-readable JSON.")
   .option("-y, --yes", "Skip confirmation for real generation.")
   .action(runCreate);

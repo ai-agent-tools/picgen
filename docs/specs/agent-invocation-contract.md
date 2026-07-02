@@ -13,6 +13,7 @@ The agent is responsible for:
 - Deciding whether PicGen should be used.
 - Turning the conversation context into a concise image prompt.
 - Choosing an appropriate preset such as `poster`, `product-shot`, or `social-cover`.
+- Passing user-selected local reference images when the user asks to continue from, edit from, or use an existing image.
 - Running a dry-run before agent-initiated generation.
 - Showing a user-friendly generation preview.
 - Calling real generation only after confirmation, unless the user explicitly asked to skip confirmation.
@@ -28,7 +29,7 @@ The PicGen CLI is responsible for:
 - Downloading, decoding, and saving generated images as local files.
 - Normalizing provider-specific response formats.
 - Printing compact results to stdout.
-- Writing detailed provider responses and diagnostics to metadata files.
+- Writing diagnostics to metadata files without storing large image payloads.
 
 ## Intent Levels
 
@@ -99,6 +100,7 @@ picgen create --provider gemini_official "<prompt>"
 picgen create --model gemini-3-pro-image-preview "<prompt>"
 picgen create --preset poster "<prompt>"
 picgen create --mode premium "<prompt>"
+picgen create --reference ./reference.png "<prompt>"
 ```
 
 Only explicit preference commands should change config:
@@ -122,6 +124,27 @@ Initial setup should focus on:
 - Default generation mode: fast, balanced, or high quality.
 
 Initial setup should not require users to understand resolution, aspect ratio, quality, image count, response format, or protocol details. Presets and routing defaults should handle those choices.
+
+Provider `base_url` values should be host-only. Users should not include `/v1` or `/v1beta`; PicGen appends protocol-specific paths internally.
+
+Provider health checks may use a lightweight `test_model`. Gemini provider tests should use a text-only `generateContent` request so health checks validate connectivity without triggering image generation.
+
+## Reference Images
+
+Agents may pass local reference images when the user explicitly asks to use an existing image, continue from a generated image, create a variant, or use a visual reference.
+
+Command pattern:
+
+```bash
+picgen create --dry-run --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+picgen create --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+```
+
+`--reference` may be repeated for multiple local images.
+
+Dry-run output should include only reference image paths, MIME types, and byte sizes. It must not print or expose image base64.
+
+Alpha supports reference images through the Gemini adapter. If the selected provider uses the OpenAI-compatible `/v1/images/generations` adapter, agents should switch to a Gemini provider for that run or explain that OpenAI-compatible reference-image support is not implemented yet.
 
 ## Output Asset Contract
 
@@ -155,6 +178,24 @@ Default stdout should stay compact:
 ```
 
 Do not print base64, binary image data, or full provider responses to stdout. Store detailed responses in metadata files.
+
+Metadata must redact large provider-only fields such as generated image base64 payloads and Gemini thought signatures. Metadata is for diagnostics; agents should not display provider responses to users unless they are debugging an explicit failure.
+
+## Provider-specific Generation Behavior
+
+Gemini image generation should request image-only responses with:
+
+```json
+{
+  "generationConfig": {
+    "responseModalities": ["IMAGE"]
+  }
+}
+```
+
+This keeps responses compact and avoids returning unnecessary text. Gemini provider health checks should not use image-only generation; they should remain text-only connectivity checks.
+
+Gemini may return internal thought parts or thought signatures. PicGen should not expose these to users. If thought images are present, PicGen should save only non-thought output images as generation results.
 
 ## Display and On-demand Loading
 

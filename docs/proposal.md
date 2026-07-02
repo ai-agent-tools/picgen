@@ -8,6 +8,7 @@ Alpha focuses only on image generation:
 
 - OpenAI-compatible `/v1/images/generations`
 - Gemini image API
+- Gemini reference-image generation
 - local CLI
 - local Codex skill
 - provider lifecycle management
@@ -59,6 +60,8 @@ PicGen should be visible to agents, but should not silently spend quota.
 Use `picgen create --dry-run` to show the planned provider, model, preset, aspect ratio, quantity, and prompt before generation.
 Manual CLI generation asks for confirmation before contacting a provider. `--yes` skips that confirmation for explicit user-driven calls.
 
+Reference images are passed with repeated `--reference <path>` flags. Alpha supports reference images through Gemini `generateContent` by sending local files as inline image parts. OpenAI-compatible reference-image editing should be implemented as a separate adapter later; the `/v1/images/generations` adapter must not silently ignore reference images.
+
 ## Alpha Commands
 
 ```bash
@@ -66,6 +69,7 @@ picgen setup
 picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
 picgen create --yes "一张产品发布会主视觉"
+picgen create --dry-run --provider gemini_official --reference ./reference.png "基于参考图生成一张海报"
 picgen provider list
 picgen provider add
 picgen provider test <name>
@@ -92,6 +96,8 @@ The repository currently implements:
 - local output asset and metadata writing
 - OpenAI-compatible image generation call
 - Gemini generateContent image generation call
+- Gemini reference-image generation call
+- provider response redaction for generated image data and Gemini thought signatures
 - routing tests
 
 Keychain-backed API key storage and full plugin packaging are not implemented yet.
