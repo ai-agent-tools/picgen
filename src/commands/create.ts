@@ -1,10 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import YAML from "yaml";
+import { createGenerationRun, writeGenerationMetadata } from "../assets/output.js";
 import { loadConfig } from "../config/store.js";
 import { getAdapter } from "../providers/adapters.js";
 import { resolveGenerationPlan } from "../routing/resolve.js";
-import type { ResolvedGenerationPlan } from "../types.js";
+import type { GeneratedImage, ResolvedGenerationPlan } from "../types.js";
 
 export interface CreateOptions {
   dryRun?: boolean;
@@ -72,19 +71,61 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
     return;
   }
 
-  await mkdir(plan.outputDirectory, { recursive: true });
-  const metadataPath = join(plan.outputDirectory, `picgen-${Date.now()}.json`);
-  await writeFile(metadataPath, JSON.stringify({ plan: planOutput }, null, 2), "utf8");
+  const run = await createGenerationRun(plan);
+  const runtimePlan = {
+    ...plan,
+    outputDirectory: run.outputDirectory
+  };
+  const runtimePlanOutput = toPlanOutput(runtimePlan);
+  await writeGenerationMetadata(run, {
+    plan: runtimePlanOutput,
+    run: {
+      id: run.id,
+      output_directory: run.outputDirectory,
+      metadata_path: run.metadataPath,
+      prompt_path: run.promptPath
+    }
+  });
 
   const adapter = getAdapter(plan.provider.protocol);
-  const results = await adapter.generate(plan);
+  let results: GeneratedImage[];
+  try {
+    results = await adapter.generate(runtimePlan, run);
+  } catch (error) {
+    await writeGenerationMetadata(run, {
+      plan: runtimePlanOutput,
+      run: {
+        id: run.id,
+        output_directory: run.outputDirectory,
+        metadata_path: run.metadataPath,
+        prompt_path: run.promptPath
+      },
+      error: {
+        message: error instanceof Error ? error.message : String(error),
+        name: error instanceof Error ? error.name : undefined
+      }
+    });
+    throw error;
+  }
+
+  await writeGenerationMetadata(run, {
+    plan: runtimePlanOutput,
+    run: {
+      id: run.id,
+      output_directory: run.outputDirectory,
+      metadata_path: run.metadataPath,
+      prompt_path: run.promptPath
+    },
+    images: results
+  });
+
   console.log(
     JSON.stringify(
       {
         ok: true,
         dry_run: false,
-        output_dir: plan.outputDirectory,
-        metadata_path: metadataPath,
+        output_dir: run.outputDirectory,
+        metadata_path: run.metadataPath,
         images: results
       },
       null,

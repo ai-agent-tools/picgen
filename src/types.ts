@@ -50,6 +50,39 @@ export interface ResolvedGenerationPlan {
   outputDirectory: string;
 }
 
+export interface GenerationRun {
+  id: string;
+  outputDirectory: string;
+  metadataPath: string;
+  promptPath: string;
+}
+
+export interface GeneratedImage {
+  id: string;
+  path: string;
+  mime_type: string;
+  metadata_path: string;
+  width?: number;
+  height?: number;
+}
+
+export type ProviderImageOutput =
+  | {
+      kind: "url";
+      url: string;
+      mime_type?: string;
+    }
+  | {
+      kind: "base64";
+      data: string;
+      mime_type?: string;
+    }
+  | {
+      kind: "bytes";
+      data: Uint8Array;
+      mime_type: string;
+    };
+
 export interface DoctorProviderResult {
   name: string;
   enabled: boolean;
