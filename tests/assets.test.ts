@@ -128,6 +128,25 @@ describe("generation output assets", () => {
     await expect(readFile(image.path, "utf8")).resolves.toBe("fake png");
   });
 
+  it("records dimensions for recognizable image data", async () => {
+    const run = await createGenerationRun(plan, new Date("2026-07-02T10:11:12"));
+
+    const image = await writeProviderImage(
+      run,
+      {
+        kind: "bytes",
+        data: minimalPngHeader(320, 180),
+        mime_type: "image/png"
+      },
+      0
+    );
+
+    expect(image).toMatchObject({
+      width: 320,
+      height: 180
+    });
+  });
+
   it("writes multiple byte images with mime-specific extensions", async () => {
     const run = await createGenerationRun(plan, new Date("2026-07-02T10:11:12"));
 
@@ -150,3 +169,13 @@ describe("generation output assets", () => {
     ]);
   });
 });
+
+function minimalPngHeader(width: number, height: number): Uint8Array {
+  const buffer = Buffer.alloc(24);
+  buffer.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a], 0);
+  buffer.writeUInt32BE(13, 8);
+  buffer.write("IHDR", 12, "ascii");
+  buffer.writeUInt32BE(width, 16);
+  buffer.writeUInt32BE(height, 20);
+  return buffer;
+}

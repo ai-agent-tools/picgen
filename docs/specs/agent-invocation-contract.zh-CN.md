@@ -218,6 +218,8 @@ CLI 默认 stdout 只输出简洁结果：
     {
       "path": "/path/to/image-1.png",
       "mime_type": "image/png",
+      "width": 1024,
+      "height": 1024,
       "metadata_path": "/path/to/metadata.json"
     }
   ],
@@ -228,6 +230,8 @@ CLI 默认 stdout 只输出简洁结果：
 完整 provider response、调试信息和错误详情应写入 metadata 文件，不应默认打印到对话里。
 
 metadata 应脱敏 provider 返回中的大字段，例如生成图片 base64 和 Gemini thought signature。metadata 主要用于诊断；除非用户正在排查错误，Agent 不应把 provider response 展示给用户。
+
+当 PicGen 能识别生成图片尺寸时，stdout 和 metadata 中每张图片都应包含 `width` 和 `height`。Agent 应优先使用这些字段判断尺寸或比例，不要仅为了检查尺寸就读取图片文件。
 
 ## Provider 特定行为
 

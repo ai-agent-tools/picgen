@@ -72,12 +72,15 @@ export async function writeProviderImage(
   const path = join(run.outputDirectory, `${id}.${extension}`);
 
   await writeFile(path, normalized.data);
+  const dimensions = readImageDimensions(normalized.data, normalized.mime_type);
 
   return {
     id,
     path,
     mime_type: normalized.mime_type,
-    metadata_path: run.metadataPath
+    metadata_path: run.metadataPath,
+    width: dimensions?.width,
+    height: dimensions?.height
   };
 }
 
@@ -159,6 +162,131 @@ function mimeTypeFromUrl(url: string): string | undefined {
     default:
       return undefined;
   }
+}
+
+function readImageDimensions(
+  data: Uint8Array,
+  mimeType: string
+): { width: number; height: number } | undefined {
+  const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+
+  if (mimeType === "image/png") {
+    return readPngDimensions(buffer);
+  }
+
+  if (mimeType === "image/jpeg" || mimeType === "image/jpg") {
+    return readJpegDimensions(buffer);
+  }
+
+  if (mimeType === "image/webp") {
+    return readWebpDimensions(buffer);
+  }
+
+  return undefined;
+}
+
+function readPngDimensions(buffer: Buffer): { width: number; height: number } | undefined {
+  if (
+    buffer.length < 24 ||
+    buffer[0] !== 0x89 ||
+    buffer.toString("ascii", 1, 4) !== "PNG" ||
+    buffer.toString("ascii", 12, 16) !== "IHDR"
+  ) {
+    return undefined;
+  }
+
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20)
+  };
+}
+
+function readJpegDimensions(buffer: Buffer): { width: number; height: number } | undefined {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    return undefined;
+  }
+
+  let offset = 2;
+  while (offset + 9 < buffer.length) {
+    if (buffer[offset] !== 0xff) return undefined;
+
+    const marker = buffer[offset + 1];
+    const segmentLength = buffer.readUInt16BE(offset + 2);
+    if (segmentLength < 2 || offset + 2 + segmentLength > buffer.length) return undefined;
+
+    if (isJpegStartOfFrame(marker)) {
+      return {
+        height: buffer.readUInt16BE(offset + 5),
+        width: buffer.readUInt16BE(offset + 7)
+      };
+    }
+
+    offset += 2 + segmentLength;
+  }
+
+  return undefined;
+}
+
+function isJpegStartOfFrame(marker: number): boolean {
+  return (
+    (marker >= 0xc0 && marker <= 0xc3) ||
+    (marker >= 0xc5 && marker <= 0xc7) ||
+    (marker >= 0xc9 && marker <= 0xcb) ||
+    (marker >= 0xcd && marker <= 0xcf)
+  );
+}
+
+function readWebpDimensions(buffer: Buffer): { width: number; height: number } | undefined {
+  if (
+    buffer.length < 30 ||
+    buffer.toString("ascii", 0, 4) !== "RIFF" ||
+    buffer.toString("ascii", 8, 12) !== "WEBP"
+  ) {
+    return undefined;
+  }
+
+  let offset = 12;
+  while (offset + 8 <= buffer.length) {
+    const chunkType = buffer.toString("ascii", offset, offset + 4);
+    const chunkSize = buffer.readUInt32LE(offset + 4);
+    const chunkDataOffset = offset + 8;
+    if (chunkDataOffset + chunkSize > buffer.length) return undefined;
+
+    if (chunkType === "VP8X" && chunkSize >= 10) {
+      return {
+        width: 1 + buffer.readUIntLE(chunkDataOffset + 4, 3),
+        height: 1 + buffer.readUIntLE(chunkDataOffset + 7, 3)
+      };
+    }
+
+    if (chunkType === "VP8L" && chunkSize >= 5 && buffer[chunkDataOffset] === 0x2f) {
+      const b1 = buffer[chunkDataOffset + 1];
+      const b2 = buffer[chunkDataOffset + 2];
+      const b3 = buffer[chunkDataOffset + 3];
+      const b4 = buffer[chunkDataOffset + 4];
+      return {
+        width: 1 + (((b2 & 0x3f) << 8) | b1),
+        height: 1 + (((b4 & 0x0f) << 10) | (b3 << 2) | ((b2 & 0xc0) >> 6))
+      };
+    }
+
+    if (
+      chunkType === "VP8 " &&
+      chunkSize >= 10 &&
+      buffer[chunkDataOffset + 3] === 0x9d &&
+      buffer[chunkDataOffset + 4] === 0x01 &&
+      buffer[chunkDataOffset + 5] === 0x2a
+    ) {
+      return {
+        width: buffer.readUInt16LE(chunkDataOffset + 6) & 0x3fff,
+        height: buffer.readUInt16LE(chunkDataOffset + 8) & 0x3fff
+      };
+    }
+
+    offset = chunkDataOffset + chunkSize + (chunkSize % 2);
+  }
+
+  return undefined;
 }
 
 function createRunId(plan: ResolvedGenerationPlan, date: Date): string {

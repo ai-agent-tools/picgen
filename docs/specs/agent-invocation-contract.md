@@ -170,6 +170,8 @@ Default stdout should stay compact:
     {
       "path": "/path/to/image-1.png",
       "mime_type": "image/png",
+      "width": 1024,
+      "height": 1024,
       "metadata_path": "/path/to/metadata.json"
     }
   ],
@@ -180,6 +182,8 @@ Default stdout should stay compact:
 Do not print base64, binary image data, or full provider responses to stdout. Store detailed responses in metadata files.
 
 Metadata must redact large provider-only fields such as generated image base64 payloads and Gemini thought signatures. Metadata is for diagnostics; agents should not display provider responses to users unless they are debugging an explicit failure.
+
+When PicGen can read the generated image dimensions, stdout and metadata should include `width` and `height` for each image. Agents should prefer these fields over reading image files just to check size or aspect ratio.
 
 ## Provider-specific Generation Behavior
 
