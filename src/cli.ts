@@ -15,6 +15,7 @@ import {
 import { preferMode, preferPreset } from "./commands/preferences.js";
 import { runQuickstart } from "./commands/quickstart.js";
 import { runSetup } from "./commands/setup.js";
+import { installSkill } from "./commands/skill.js";
 import { runUpdateCheck } from "./commands/update.js";
 import { loadPicgenEnv } from "./config/env.js";
 import { VERSION } from "./version.js";
@@ -104,6 +105,15 @@ program
   .option("--stdin", "Read the key value from stdin.")
   .option("--value <value>", "Set the key value directly. Prefer --stdin for agent workflows.")
   .action(setApiKey);
+
+program
+  .command("skill")
+  .description("Install PicGen agent skills.")
+  .command("install")
+  .argument("<target>", "Skill target. Currently supported: codex.")
+  .description("Install the bundled PicGen skill into an agent skill directory.")
+  .option("--force", "Overwrite an existing installed skill.")
+  .action(installSkill);
 
 program
   .command("mode")

@@ -6,18 +6,21 @@ This checklist is for the first internal or friend-and-colleague trial of PicGen
 
 ```bash
 npm install -g @ai-agent-tools/picgen
+picgen skill install codex
 picgen --help
 picgen quickstart
 ```
 
 Node.js 20 or newer is required.
 
+`picgen skill install codex` installs the bundled PicGen skill into `~/.codex/skills/picgen`. Restart Codex or start a new session if the skill is not visible yet.
+
 ## Agent Prompt
 
 Send this to Codex, Trae, Claude Code, or a similar coding agent:
 
 ```text
-请安装并体验 @ai-agent-tools/picgen：全局安装 npm install -g @ai-agent-tools/picgen，运行 picgen setup 配置，然后先 dry-run 预览，再确认生成一张测试图。如果我要用参考图，请使用 --reference <图片路径>。
+请安装并体验 @ai-agent-tools/picgen：全局安装 npm install -g @ai-agent-tools/picgen。如果当前是 Codex，请运行 picgen skill install codex 安装 PicGen skill。然后引导我配置 provider 和 API key，先 dry-run 预览，再确认生成一张测试图。如果我要用参考图，请使用 --reference <图片路径>。
 ```
 
 ## First Run

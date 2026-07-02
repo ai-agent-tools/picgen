@@ -27,6 +27,7 @@ npm run build
 
 ```bash
 npm install -g @ai-agent-tools/picgen
+picgen skill install codex
 picgen --help
 picgen quickstart
 ```
@@ -34,7 +35,7 @@ picgen quickstart
 Agent trial prompt:
 
 ```text
-请安装并体验 @ai-agent-tools/picgen：全局安装 npm install -g @ai-agent-tools/picgen，运行 picgen setup 配置，然后先 dry-run 预览，再确认生成一张测试图。如果我要用参考图，请使用 --reference <图片路径>。
+请安装并体验 @ai-agent-tools/picgen：全局安装 npm install -g @ai-agent-tools/picgen。如果当前是 Codex，请运行 picgen skill install codex 安装 PicGen skill。然后引导我配置 provider 和 API key，先 dry-run 预览，再确认生成一张测试图。如果我要用参考图，请使用 --reference <图片路径>。
 ```
 
 For first-user rollout, see [docs/release-alpha.md](./docs/release-alpha.md).
@@ -44,6 +45,7 @@ For first-user rollout, see [docs/release-alpha.md](./docs/release-alpha.md).
 ```bash
 picgen setup
 picgen quickstart
+picgen skill install codex
 picgen update check
 picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
