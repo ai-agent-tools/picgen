@@ -10,5 +10,6 @@ describe("quickstart", () => {
     expect(output).toContain('picgen create --dry-run "一张极简科技感产品海报"');
     expect(output).toContain("--reference ./reference.png");
     expect(output).toContain("Agent prompt:");
+    expect(output).toContain("docs/release-alpha.md");
   });
 });

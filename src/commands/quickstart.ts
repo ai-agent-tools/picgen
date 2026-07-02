@@ -28,6 +28,7 @@ export function formatQuickstart(): string {
     "Notes:",
     "  - Provider host URLs should not include /v1 or /v1beta.",
     "  - Agent workflows should dry-run before real generation.",
-    "  - Generated images are saved locally; do not paste base64 into chat."
+    "  - Generated images are saved locally; do not paste base64 into chat.",
+    "  - First-user rollout checklist: docs/release-alpha.md"
   ].join("\n");
 }

@@ -37,6 +37,8 @@ Agent trial prompt:
 请安装并体验 @ai-agent-tools/picgen：全局安装 npm install -g @ai-agent-tools/picgen，运行 picgen setup 配置，然后先 dry-run 预览，再确认生成一张测试图。如果我要用参考图，请使用 --reference <图片路径>。
 ```
 
+For first-user rollout, see [docs/release-alpha.md](./docs/release-alpha.md).
+
 ## Commands
 
 ```bash
