@@ -86,8 +86,14 @@ PICGEN_CONFIG=/path/to/picgen.yaml npm run dev -- doctor
 PicGen also loads `.env` from the current working directory:
 
 ```text
-PICGEN_OPENAI_PROXY_KEY=...
-PICGEN_GEMINI_PROXY_KEY=...
+OPENAI_API_KEY=...
+GEMINI_API_KEY=...
+```
+
+You can start from the included example:
+
+```bash
+cp .env.example .env
 ```
 
 Provider `base_url` values should be host-only. Do not include `/v1` or `/v1beta`; PicGen adds protocol paths automatically.

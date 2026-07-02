@@ -42,6 +42,10 @@ Do not include `/v1` or `/v1beta`.
 
 4. Set API keys in the shell or a local `.env` file:
 
+```bash
+cp .env.example .env
+```
+
 ```text
 OPENAI_API_KEY=...
 GEMINI_API_KEY=...
