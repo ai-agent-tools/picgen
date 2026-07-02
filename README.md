@@ -23,6 +23,19 @@ npm run typecheck
 npm run build
 ```
 
+## Install
+
+```bash
+npm install -g @ai-agent-tools/picgen
+picgen --help
+```
+
+Agent trial prompt:
+
+```text
+请安装并体验 @ai-agent-tools/picgen：全局安装 npm install -g @ai-agent-tools/picgen，运行 picgen setup 配置，然后先 dry-run 预览，再确认生成一张测试图。如果我要用参考图，请使用 --reference <图片路径>。
+```
+
 ## Commands
 
 ```bash

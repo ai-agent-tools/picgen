@@ -1,5 +1,5 @@
 {
-  "name": "@agent-tools/picgen",
+  "name": "@ai-agent-tools/picgen",
   "version": "0.1.0-alpha.0",
   "description": "A lightweight image generation connector for AI agents.",
   "type": "module",
