@@ -1,4 +1,5 @@
-import { confirm, input, select } from "@inquirer/prompts";
+import { confirm, input, password, select } from "@inquirer/prompts";
+import { getManagedEnvPath, saveManagedEnvVar } from "../config/env.js";
 import { setPreferredMode, setPreferredProvider } from "../config/preferences.js";
 import { ensureConfig, getConfigPath, loadConfig, saveConfig } from "../config/store.js";
 import { testProvider } from "../providers/health.js";
@@ -33,6 +34,7 @@ export async function runSetup(): Promise<void> {
         { name: "Quick add a common provider/channel", value: "quick-add" },
         { name: "Choose default provider/channel", value: "provider" },
         { name: "Choose generation preference", value: "mode" },
+        { name: "Configure API key", value: "key" },
         { name: "Test a provider", value: "test" },
         { name: "Advanced: add a custom provider/channel", value: "add" },
         { name: "Finish setup", value: "done" }
@@ -45,6 +47,8 @@ export async function runSetup(): Promise<void> {
       await chooseDefaultProvider();
     } else if (action === "mode") {
       await chooseDefaultMode();
+    } else if (action === "key") {
+      await chooseProviderKeyToConfigure();
     } else if (action === "test") {
       await chooseProviderToTest();
     } else if (action === "add") {
@@ -69,7 +73,7 @@ async function printSetupSummary(): Promise<void> {
           ? "fallback"
           : "manual";
     console.log(
-      `- ${providerName}: ${provider.enabled ? "enabled" : "disabled"}, ${preference}, ${providerLabel(provider)}, capabilities=${provider.capabilities.join(",")}`
+      `- ${providerName}: ${provider.enabled ? "enabled" : "disabled"}, ${preference}, ${providerLabel(provider)}, key=${provider.api_key_env}${process.env[provider.api_key_env] ? " set" : " missing"}, capabilities=${provider.capabilities.join(",")}`
     );
   }
 }
@@ -122,6 +126,20 @@ async function chooseProviderToTest(): Promise<void> {
   console.log(result.message);
   if (result.model) console.log(`Model: ${result.model}`);
   if (result.http_status) console.log(`HTTP status: ${result.http_status}`);
+}
+
+async function chooseProviderKeyToConfigure(): Promise<void> {
+  const config = await loadConfig();
+  const name = await select<string>({
+    message: "Choose the provider key to configure",
+    default: config.routing.default_provider,
+    choices: Object.entries(config.providers).map(([providerName, provider]) => ({
+      name: `${providerName} (${provider.api_key_env}${process.env[provider.api_key_env] ? ", currently set" : ", missing"})`,
+      value: providerName
+    }))
+  });
+
+  await configureProviderApiKey(config.providers[name]);
 }
 
 async function quickAddProvider(): Promise<void> {
@@ -188,7 +206,31 @@ async function quickAddProvider(): Promise<void> {
 
   await saveConfig(config);
   console.log(`Added provider: ${name}`);
-  console.log(`Set ${apiKeyEnv} in your shell or .env before testing this provider.`);
+  await configureProviderApiKey(provider);
+}
+
+async function configureProviderApiKey(provider: ProviderConfig): Promise<void> {
+  if (process.env[provider.api_key_env]) {
+    const replace = await confirm({
+      message: `${provider.api_key_env} is already available. Replace the saved PicGen key?`,
+      default: false
+    });
+    if (!replace) return;
+  }
+
+  const value = await password({
+    message: `Paste API key for ${provider.api_key_env} (leave empty to skip)`,
+    mask: "*"
+  });
+
+  if (!value.trim()) {
+    console.log(`Skipped API key. You can configure it later with picgen setup.`);
+    return;
+  }
+
+  const path = await saveManagedEnvVar(provider.api_key_env, value.trim());
+  console.log(`Saved ${provider.api_key_env} to ${path}`);
+  console.log(`PicGen loads this file automatically. Advanced users can override it with shell env vars or a project .env.`);
 }
 
 function quickProviderDefaults(template: QuickProviderTemplate): {

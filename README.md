@@ -91,6 +91,14 @@ OPENAI_API_KEY=...
 GEMINI_API_KEY=...
 ```
 
+For non-technical users, `picgen setup` can save API keys for you in:
+
+```text
+~/.picgen/.env
+```
+
+PicGen loads this managed env file automatically. Shell environment variables take priority, and a project `.env` can override the managed file for local testing.
+
 You can start from the included example:
 
 ```bash

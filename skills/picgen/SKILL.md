@@ -20,7 +20,7 @@ Never silently spend user quota. Do not send full conversation context to provid
 ## Workflow
 
 1. Run `picgen doctor --json` to check configuration.
-2. If no usable provider is configured, guide the user to run `picgen setup`.
+2. If no usable provider is configured, guide the user to run `picgen setup`. The setup wizard can configure providers and save API keys for non-technical users.
 3. Choose a preset from the user's intent, such as `poster`, `product-shot`, or `social-cover`.
 4. Run `picgen create --dry-run --preset <preset> "<prompt>"`.
 5. Present the dry-run as a user-facing generation preview. Do not expose `dry-run` as a technical term unless useful.
@@ -75,7 +75,7 @@ PicGen redacts generated image payloads and Gemini thought signatures from metad
 
 If `doctor` reports no usable provider, ask the user to run `picgen setup`.
 
-If an API key is missing, name the required environment variable.
+If an API key is missing, guide the user to run `picgen setup` and choose `Configure API key`. Name the required environment variable only when useful for debugging.
 
 If a provider is disabled, suggest enabling it or using a one-off provider override.
 

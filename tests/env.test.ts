@@ -1,0 +1,77 @@
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { getManagedEnvPath, loadPicgenEnv, saveManagedEnvVar } from "../src/config/env.js";
+
+let tempDir: string;
+let previousEnvPath: string | undefined;
+let previousCwd: string;
+let previousKey: string | undefined;
+
+beforeEach(async () => {
+  tempDir = await mkdtemp(join(tmpdir(), "picgen-env-test-"));
+  previousEnvPath = process.env.PICGEN_ENV_PATH;
+  previousCwd = process.cwd();
+  previousKey = process.env.PICGEN_TEST_KEY;
+  process.env.PICGEN_ENV_PATH = join(tempDir, "home", ".picgen", ".env");
+  delete process.env.PICGEN_TEST_KEY;
+});
+
+afterEach(async () => {
+  process.chdir(previousCwd);
+
+  if (previousEnvPath === undefined) {
+    delete process.env.PICGEN_ENV_PATH;
+  } else {
+    process.env.PICGEN_ENV_PATH = previousEnvPath;
+  }
+
+  if (previousKey === undefined) {
+    delete process.env.PICGEN_TEST_KEY;
+  } else {
+    process.env.PICGEN_TEST_KEY = previousKey;
+  }
+
+  await rm(tempDir, { recursive: true, force: true });
+});
+
+describe("PicGen env loading", () => {
+  it("saves managed API keys with private file permissions", async () => {
+    const path = await saveManagedEnvVar("PICGEN_TEST_KEY", "secret value");
+
+    await expect(readFile(path, "utf8")).resolves.toBe(
+      'PICGEN_TEST_KEY="secret value"\n'
+    );
+    expect((await stat(path)).mode & 0o777).toBe(0o600);
+    expect(process.env.PICGEN_TEST_KEY).toBe("secret value");
+    expect(getManagedEnvPath()).toBe(path);
+  });
+
+  it("loads managed env and lets project env override it", async () => {
+    await saveManagedEnvVar("PICGEN_TEST_KEY", "managed");
+    const projectDir = join(tempDir, "project");
+    await mkdir(projectDir);
+    await writeFile(join(projectDir, ".env"), "PICGEN_TEST_KEY=project\n", "utf8");
+    delete process.env.PICGEN_TEST_KEY;
+    process.chdir(projectDir);
+
+    await loadPicgenEnv();
+
+    expect(process.env.PICGEN_TEST_KEY).toBe("project");
+  });
+
+  it("does not override shell env vars", async () => {
+    process.env.PICGEN_TEST_KEY = "shell";
+    await saveManagedEnvVar("PICGEN_TEST_KEY", "managed");
+    const projectDir = join(tempDir, "project");
+    await mkdir(projectDir);
+    await writeFile(join(projectDir, ".env"), "PICGEN_TEST_KEY=project\n", "utf8");
+    process.env.PICGEN_TEST_KEY = "shell";
+    process.chdir(projectDir);
+
+    await loadPicgenEnv();
+
+    expect(process.env.PICGEN_TEST_KEY).toBe("shell");
+  });
+});

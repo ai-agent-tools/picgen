@@ -40,7 +40,17 @@ https://generativelanguage.googleapis.com
 
 Do not include `/v1` or `/v1beta`.
 
-4. Set API keys in the shell or a local `.env` file:
+4. Configure API keys:
+
+For non-technical users, prefer `picgen setup`. It can save provider API keys in PicGen's managed env file:
+
+```text
+~/.picgen/.env
+```
+
+PicGen loads this file automatically.
+
+Advanced users can still use shell environment variables or a local project `.env`:
 
 ```bash
 cp .env.example .env

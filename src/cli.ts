@@ -1,4 +1,3 @@
-import "dotenv/config";
 import { Command } from "commander";
 import { runCreate } from "./commands/create.js";
 import { runDoctor } from "./commands/doctor.js";
@@ -15,7 +14,10 @@ import { preferMode, preferPreset } from "./commands/preferences.js";
 import { runQuickstart } from "./commands/quickstart.js";
 import { runSetup } from "./commands/setup.js";
 import { runUpdateCheck } from "./commands/update.js";
+import { loadPicgenEnv } from "./config/env.js";
 import { VERSION } from "./version.js";
+
+await loadPicgenEnv();
 
 const program = new Command();
 
