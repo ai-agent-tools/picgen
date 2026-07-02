@@ -1,4 +1,5 @@
 import { writeProviderImages } from "../assets/output.js";
+import { fetchWithProviderTimeout, resolveProviderTimeoutMs } from "./timeout.js";
 import { buildOpenAIProtocolUrl } from "./urls.js";
 import type {
   GenerationRun,
@@ -29,14 +30,18 @@ export class OpenAIImagesAdapter {
       throw new Error(`Missing API key environment variable: ${plan.provider.api_key_env}`);
     }
 
-    const response = await fetch(buildOpenAIImagesUrl(plan.provider.base_url), {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json"
+    const response = await fetchWithProviderTimeout(
+      buildOpenAIImagesUrl(plan.provider.base_url),
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(buildOpenAIImagesRequest(plan))
       },
-      body: JSON.stringify(buildOpenAIImagesRequest(plan))
-    });
+      resolveProviderTimeoutMs(plan)
+    );
 
     const raw = await readJsonResponse(response);
     if (!response.ok) {

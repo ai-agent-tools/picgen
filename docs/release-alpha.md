@@ -143,6 +143,14 @@ picgen provider test <provider-name> --json
 
 Check `base_url`, API key, model name, and provider availability.
 
+`Provider request timed out`
+
+High quality, large, or slow third-party image channels can take longer. Try again, use a faster preset, or raise the request timeout:
+
+```bash
+PICGEN_PROVIDER_TIMEOUT_MS=450000 picgen create --yes --preset poster "<prompt>"
+```
+
 `No enabled provider can satisfy...`
 
 Run `picgen provider list`, enable a provider, add a fallback provider, or adjust the selected mode/model.

@@ -7,6 +7,7 @@ import {
   formatUpdateMessage,
   isNewerVersion
 } from "../src/commands/update.js";
+import { VERSION } from "../src/version.js";
 
 let tempDir: string;
 let previousDisable: string | undefined;
@@ -81,7 +82,7 @@ describe("update checks", () => {
 
     await expect(checkForUpdate({ force: true })).resolves.toMatchObject({
       checked: true,
-      current_version: "0.1.0-alpha.0",
+      current_version: VERSION,
       latest_version: "0.1.1-alpha.0",
       update_available: true
     });

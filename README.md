@@ -101,6 +101,12 @@ Provider `base_url` values should be host-only. Do not include `/v1` or `/v1beta
 
 Providers may optionally set `test_model` in `~/.picgen/config.yaml` when health checks should use a lightweight model instead of the first generation model.
 
+Generation requests use adaptive provider timeouts: fast draft requests allow 120s, balanced requests allow 180s, and high quality or large requests allow 300s. If a third-party channel is slower, override it with `PICGEN_PROVIDER_TIMEOUT_MS`:
+
+```bash
+PICGEN_PROVIDER_TIMEOUT_MS=450000 picgen create --yes --preset poster "一张产品发布会主视觉"
+```
+
 Providers expose capabilities such as `text-to-image` and `reference-image`. Old configs that omit capabilities are upgraded in memory from the provider protocol: Gemini supports both text and reference-image generation, while OpenAI-compatible `/v1/images/generations` supports text-to-image only.
 
 Generated image data and provider-only fields such as base64 image payloads and Gemini thought signatures are redacted from metadata. PicGen keeps the generated assets as local image files and keeps stdout compact for agent workflows.

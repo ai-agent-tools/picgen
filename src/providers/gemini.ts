@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { writeProviderImages } from "../assets/output.js";
+import { fetchWithProviderTimeout, resolveProviderTimeoutMs } from "./timeout.js";
 import { buildGeminiProtocolUrl } from "./urls.js";
 import type {
   GenerationRun,
@@ -44,16 +45,21 @@ export class GeminiAdapter {
     const providerImages: ProviderImageOutput[] = [];
     const requestCount = Math.max(1, plan.preset.n);
     const referenceParts = await readReferenceImageParts(plan);
+    const timeoutMs = resolveProviderTimeoutMs(plan);
 
     for (let index = 0; index < requestCount; index += 1) {
-      const response = await fetch(buildGeminiGenerateContentUrl(plan.provider.base_url, plan.model), {
-        method: "POST",
-        headers: {
-          "x-goog-api-key": apiKey,
-          "Content-Type": "application/json"
+      const response = await fetchWithProviderTimeout(
+        buildGeminiGenerateContentUrl(plan.provider.base_url, plan.model),
+        {
+          method: "POST",
+          headers: {
+            "x-goog-api-key": apiKey,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(buildGeminiGenerateContentRequest(plan, referenceParts))
         },
-        body: JSON.stringify(buildGeminiGenerateContentRequest(plan, referenceParts))
-      });
+        timeoutMs
+      );
 
       const raw = await readJsonResponse(response);
       if (!response.ok) {
