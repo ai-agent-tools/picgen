@@ -65,3 +65,5 @@ PICGEN_GEMINI_PROXY_KEY=...
 ```
 
 Provider `base_url` values should be host-only. Do not include `/v1` or `/v1beta`; PicGen adds protocol paths automatically.
+
+Providers may optionally set `test_model` in `~/.picgen/config.yaml` when health checks should use a lightweight model instead of the first generation model.

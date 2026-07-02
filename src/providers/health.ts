@@ -39,7 +39,7 @@ export async function testProvider(
     };
   }
 
-  const model = provider.models[0];
+  const model = provider.test_model ?? provider.models[0];
   try {
     const response =
       provider.protocol === "openai-images"

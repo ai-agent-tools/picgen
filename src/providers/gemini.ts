@@ -84,7 +84,13 @@ export function buildGeminiGenerateContentRequest(
       }
     ],
     generationConfig: {
-      responseModalities: ["TEXT", "IMAGE"]
+      responseModalities: ["TEXT", "IMAGE"],
+      responseFormat: {
+        image: removeUndefined({
+          aspectRatio: plan.preset.aspect_ratio,
+          imageSize: mapGeminiImageSize(plan.preset.size)
+        })
+      }
     }
   };
 }
@@ -131,6 +137,25 @@ function normalizeInlineData(
     data: inlineData.data,
     mimeType: inlineData.mime_type
   };
+}
+
+function mapGeminiImageSize(size: string): string | undefined {
+  switch (size) {
+    case "small":
+      return "512";
+    case "medium":
+      return "1K";
+    case "large":
+      return "2K";
+    case "auto":
+      return undefined;
+    default:
+      return /^(512|1K|2K|4K)$/.test(size) ? size : undefined;
+  }
+}
+
+function removeUndefined<T extends Record<string, unknown>>(input: T): Partial<T> {
+  return Object.fromEntries(Object.entries(input).filter(([, value]) => value !== undefined)) as Partial<T>;
 }
 
 async function readJsonResponse(response: Response): Promise<GeminiGenerateContentResponse> {

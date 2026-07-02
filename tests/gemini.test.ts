@@ -62,7 +62,13 @@ describe("Gemini generateContent adapter", () => {
         }
       ],
       generationConfig: {
-        responseModalities: ["TEXT", "IMAGE"]
+        responseModalities: ["TEXT", "IMAGE"],
+        responseFormat: {
+          image: {
+            aspectRatio: "3:4",
+            imageSize: "2K"
+          }
+        }
       }
     });
   });

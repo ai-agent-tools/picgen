@@ -10,6 +10,7 @@ export interface ProviderConfig {
   base_url: string;
   api_key_env: string;
   models: string[];
+  test_model?: string;
 }
 
 export interface ModeConfig {

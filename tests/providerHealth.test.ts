@@ -100,6 +100,28 @@ describe("provider health checks", () => {
     });
   });
 
+  it("uses an optional provider test model for health checks", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await testProvider("gemini_official", {
+      ...defaultConfig.providers.gemini_official,
+      test_model: "gemini-3.1-flash-lite-preview"
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent",
+      expect.objectContaining({
+        method: "POST"
+      })
+    );
+    expect(result).toMatchObject({
+      ok: true,
+      model: "gemini-3.1-flash-lite-preview"
+    });
+  });
+
   it("reports provider error messages", async () => {
     process.env.OPENAI_API_KEY = "test-key";
     vi.stubGlobal(

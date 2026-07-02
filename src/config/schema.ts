@@ -6,7 +6,8 @@ const providerSchema = z.object({
   channel: z.enum(["official", "third_party"]),
   base_url: z.string().url(),
   api_key_env: z.string().min(1),
-  models: z.array(z.string().min(1)).min(1)
+  models: z.array(z.string().min(1)).min(1),
+  test_model: z.string().min(1).optional()
 });
 
 const presetSchema = z.object({
