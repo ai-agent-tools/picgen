@@ -23,13 +23,21 @@ export async function listProviders(): Promise<void> {
 export async function addProvider(): Promise<void> {
   const config = await loadConfig();
   const provider = await promptProvider(config);
-  config.providers[provider.name] = provider.config;
-  const knownProviders = [config.routing.default_provider, ...config.routing.fallback_providers];
-  if (!knownProviders.includes(provider.name)) {
-    config.routing.fallback_providers.push(provider.name);
-  }
+  addProviderToConfig(config, provider.name, provider.config);
   await saveConfig(config);
   console.log(`Added provider: ${provider.name}`);
+}
+
+export function addProviderToConfig(
+  config: PicgenConfig,
+  name: string,
+  provider: ProviderConfig
+): void {
+  config.providers[name] = provider;
+  const knownProviders = [config.routing.default_provider, ...config.routing.fallback_providers];
+  if (!knownProviders.includes(name)) {
+    config.routing.fallback_providers.push(name);
+  }
 }
 
 export async function editProvider(name: string): Promise<void> {
@@ -137,7 +145,7 @@ async function promptProvider(
 
   const name = await input({
     message: "Provider name",
-    default: nextAvailableName(config, defaultName, existingName)
+    default: nextAvailableProviderName(config, defaultName, existingName)
   });
 
   const baseUrl = await input({
@@ -184,7 +192,11 @@ async function promptProvider(
   };
 }
 
-function nextAvailableName(config: PicgenConfig, baseName: string, existingName?: string): string {
+export function nextAvailableProviderName(
+  config: PicgenConfig,
+  baseName: string,
+  existingName?: string
+): string {
   if (existingName) return existingName;
   if (!config.providers[baseName]) return baseName;
   let index = 2;
@@ -192,7 +204,7 @@ function nextAvailableName(config: PicgenConfig, baseName: string, existingName?
   return `${baseName}_${index}`;
 }
 
-function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConfig["capabilities"] {
+export function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConfig["capabilities"] {
   return protocol === "gemini"
     ? ["text-to-image", "reference-image"]
     : ["text-to-image"];

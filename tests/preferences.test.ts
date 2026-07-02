@@ -10,7 +10,12 @@ import {
   setPreferredProvider
 } from "../src/config/preferences.js";
 import { saveConfig } from "../src/config/store.js";
-import { preferProvider } from "../src/commands/provider.js";
+import {
+  addProviderToConfig,
+  defaultCapabilitiesForProtocol,
+  nextAvailableProviderName,
+  preferProvider
+} from "../src/commands/provider.js";
 import { preferMode, preferPreset } from "../src/commands/preferences.js";
 
 let tempDir: string;
@@ -79,6 +84,37 @@ describe("preference commands", () => {
 
     const config = await readSavedConfig();
     expect(config.default_preset).toBe("social-cover");
+  });
+
+  it("adds providers as fallbacks without changing default preference", () => {
+    const config = structuredClone(defaultConfig);
+
+    addProviderToConfig(config, "gemini_proxy", {
+      ...defaultConfig.providers.gemini_official,
+      channel: "third_party",
+      base_url: "https://www.pandai.vip"
+    });
+
+    expect(config.routing.default_provider).toBe("openai_official");
+    expect(config.routing.fallback_providers).toContain("gemini_proxy");
+  });
+
+  it("chooses the next available provider name", () => {
+    const config = structuredClone(defaultConfig);
+    config.providers.openai_proxy = {
+      ...defaultConfig.providers.openai_official,
+      channel: "third_party"
+    };
+
+    expect(nextAvailableProviderName(config, "openai_proxy")).toBe("openai_proxy_2");
+  });
+
+  it("uses protocol defaults for provider capabilities", () => {
+    expect(defaultCapabilitiesForProtocol("openai-images")).toEqual(["text-to-image"]);
+    expect(defaultCapabilitiesForProtocol("gemini")).toEqual([
+      "text-to-image",
+      "reference-image"
+    ]);
   });
 });
 

@@ -57,7 +57,9 @@ picgen mode prefer premium
 picgen preset prefer poster
 ```
 
-`picgen setup` is repeatable. Use it to choose the default provider, choose the default generation preference, test providers, or add a new provider/channel.
+`picgen setup` is repeatable. Use it to quick-add a common provider/channel, choose the default provider, choose the default generation preference, test providers, or add a custom provider/channel.
+
+Quick-add setup asks only for the essentials: provider name, host URL, API key environment variable, and model list with recommended defaults. Advanced custom setup is still available when you need to choose protocol and channel manually.
 
 Real `picgen create` calls ask for confirmation before contacting a provider. Use `--yes` only when you want to skip that CLI confirmation.
 
