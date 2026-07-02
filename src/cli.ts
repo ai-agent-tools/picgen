@@ -1,11 +1,13 @@
 import { Command } from "commander";
 import { runCreate } from "./commands/create.js";
 import { runDoctor } from "./commands/doctor.js";
+import { setApiKey } from "./commands/key.js";
 import {
   addProvider,
   editProvider,
   listProviders,
   preferProvider,
+  quickAddProvider,
   removeProvider,
   runProviderTest,
   setProviderEnabled
@@ -59,6 +61,16 @@ program
 const provider = program.command("provider").description("Manage providers/channels.");
 provider.command("list").description("List providers.").action(listProviders);
 provider.command("add").description("Add a provider.").action(addProvider);
+provider
+  .command("quick-add")
+  .argument("<template>", "openai-proxy, gemini-proxy, openai-official, or gemini-official")
+  .description("Add a common provider/channel without interactive prompts.")
+  .option("--name <name>", "Provider name.")
+  .option("--host <url>", "Provider host URL. Do not include /v1 or /v1beta.")
+  .option("--key-env <name>", "API key environment variable.")
+  .option("--models <models>", "Comma-separated model list.")
+  .option("--prefer", "Use this provider as the default.")
+  .action(quickAddProvider);
 provider.command("edit").argument("<name>").description("Edit a provider.").action(editProvider);
 provider
   .command("test")
@@ -82,6 +94,16 @@ provider
   .description("Disable a provider.")
   .action((name: string) => setProviderEnabled(name, false));
 provider.command("remove").argument("<name>").description("Remove a provider.").action(removeProvider);
+
+program
+  .command("key")
+  .description("Manage PicGen API keys.")
+  .command("set")
+  .argument("<env-name>", "Environment variable name, such as PICGEN_GEMINI_PROXY_KEY.")
+  .description("Save an API key to PicGen's managed env file.")
+  .option("--stdin", "Read the key value from stdin.")
+  .option("--value <value>", "Set the key value directly. Prefer --stdin for agent workflows.")
+  .action(setApiKey);
 
 program
   .command("mode")

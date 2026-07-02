@@ -14,7 +14,8 @@ import {
   addProviderToConfig,
   defaultCapabilitiesForProtocol,
   nextAvailableProviderName,
-  preferProvider
+  preferProvider,
+  quickAddProvider
 } from "../src/commands/provider.js";
 import { preferMode, preferPreset } from "../src/commands/preferences.js";
 
@@ -115,6 +116,28 @@ describe("preference commands", () => {
       "text-to-image",
       "reference-image"
     ]);
+  });
+
+  it("quick-adds a common provider without interactive prompts", async () => {
+    await saveConfig(structuredClone(defaultConfig));
+
+    await quickAddProvider("gemini-proxy", {
+      host: "https://www.pandai.vip/v1beta",
+      keyEnv: "PICGEN_GEMINI_PROXY_KEY",
+      prefer: true
+    });
+
+    const config = await readSavedConfig();
+    expect(config.routing.default_provider).toBe("gemini_proxy");
+    expect(config.providers.gemini_proxy).toEqual(
+      expect.objectContaining({
+        protocol: "gemini",
+        channel: "third_party",
+        base_url: "https://www.pandai.vip",
+        api_key_env: "PICGEN_GEMINI_PROXY_KEY",
+        capabilities: ["text-to-image", "reference-image"]
+      })
+    );
   });
 });
 

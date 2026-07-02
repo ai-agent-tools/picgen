@@ -29,6 +29,16 @@ Never silently spend user quota. Do not send full conversation context to provid
 
 If the user explicitly says to generate directly or not ask for confirmation, you may skip the user-facing confirmation step. Still form a generation plan internally.
 
+When running inside an agent environment where interactive terminal prompts are not visible, do not run `picgen setup` as a blocking wizard. Ask the user for the provider type, host, and API key in chat, then use non-interactive commands:
+
+```bash
+picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer
+picgen key set PICGEN_GEMINI_PROXY_KEY --stdin
+picgen provider test gemini_proxy --json
+```
+
+Pass the API key through stdin for `picgen key set`; do not put secrets directly in shell history unless the user explicitly accepts that tradeoff.
+
 For reference-image generation, pass local images with repeated `--reference <path>` flags:
 
 ```bash

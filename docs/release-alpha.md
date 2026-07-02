@@ -50,6 +50,14 @@ For non-technical users, prefer `picgen setup`. It can save provider API keys in
 
 PicGen loads this file automatically.
 
+In agent environments where interactive terminal prompts are not visible, ask the user for provider type, host, and API key in chat, then use non-interactive commands. Example for a Gemini-compatible third-party channel:
+
+```bash
+picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer
+picgen key set PICGEN_GEMINI_PROXY_KEY --stdin
+picgen provider test gemini_proxy --json
+```
+
 Advanced users can still use shell environment variables or a local project `.env`:
 
 ```bash

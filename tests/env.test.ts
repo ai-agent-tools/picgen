@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getManagedEnvPath, loadPicgenEnv, saveManagedEnvVar } from "../src/config/env.js";
+import { setApiKey } from "../src/commands/key.js";
 
 let tempDir: string;
 let previousEnvPath: string | undefined;
@@ -73,5 +74,14 @@ describe("PicGen env loading", () => {
     await loadPicgenEnv();
 
     expect(process.env.PICGEN_TEST_KEY).toBe("shell");
+  });
+
+  it("sets API keys through the command helper", async () => {
+    await setApiKey("PICGEN_TEST_KEY", { value: "command-secret" });
+
+    await expect(readFile(getManagedEnvPath(), "utf8")).resolves.toBe(
+      "PICGEN_TEST_KEY=command-secret\n"
+    );
+    expect(process.env.PICGEN_TEST_KEY).toBe("command-secret");
   });
 });

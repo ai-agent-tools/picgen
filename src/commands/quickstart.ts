@@ -14,6 +14,8 @@ export function formatQuickstart(): string {
     "",
     "Configure:",
     "  picgen setup  # can save provider API keys for you",
+    "  picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer",
+    "  picgen key set PICGEN_GEMINI_PROXY_KEY --stdin",
     "  picgen doctor --json",
     "",
     "Preview before spending quota:",

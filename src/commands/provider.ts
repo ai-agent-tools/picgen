@@ -28,6 +28,45 @@ export async function addProvider(): Promise<void> {
   console.log(`Added provider: ${provider.name}`);
 }
 
+export interface QuickAddProviderOptions {
+  name?: string;
+  host?: string;
+  keyEnv?: string;
+  models?: string;
+  prefer?: boolean;
+}
+
+export async function quickAddProvider(
+  templateName: string,
+  options: QuickAddProviderOptions
+): Promise<void> {
+  const config = await loadConfig();
+  const template = quickProviderTemplate(templateName);
+  const name = options.name ?? nextAvailableProviderName(config, template.name);
+  const provider: ProviderConfig = {
+    enabled: true,
+    protocol: template.protocol,
+    channel: template.channel,
+    base_url: normalizeProviderBaseUrl(options.host ?? template.base_url),
+    api_key_env: options.keyEnv ?? template.api_key_env,
+    models: parseModels(options.models ?? template.models.join(",")),
+    capabilities: defaultCapabilitiesForProtocol(template.protocol)
+  };
+
+  addProviderToConfig(config, name, provider);
+  if (options.prefer) {
+    setPreferredProvider(config, name);
+  }
+  await saveConfig(config);
+
+  console.log(`Added provider: ${name}`);
+  console.log(`Protocol: ${provider.protocol}`);
+  console.log(`Host: ${provider.base_url}`);
+  console.log(`API key env: ${provider.api_key_env}`);
+  console.log(`Models: ${provider.models.join(",")}`);
+  if (options.prefer) console.log(`Preferred provider: ${name}`);
+}
+
 export function addProviderToConfig(
   config: PicgenConfig,
   name: string,
@@ -208,4 +247,63 @@ export function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConf
   return protocol === "gemini"
     ? ["text-to-image", "reference-image"]
     : ["text-to-image"];
+}
+
+function quickProviderTemplate(templateName: string): {
+  name: string;
+  protocol: Protocol;
+  channel: Channel;
+  base_url: string;
+  api_key_env: string;
+  models: string[];
+} {
+  switch (templateName.replaceAll("_", "-")) {
+    case "openai-proxy":
+      return {
+        name: "openai_proxy",
+        protocol: "openai-images",
+        channel: "third_party",
+        base_url: "https://www.pandai.vip",
+        api_key_env: "PICGEN_OPENAI_PROXY_KEY",
+        models: ["gpt-image-2"]
+      };
+    case "gemini-proxy":
+      return {
+        name: "gemini_proxy",
+        protocol: "gemini",
+        channel: "third_party",
+        base_url: "https://www.pandai.vip",
+        api_key_env: "PICGEN_GEMINI_PROXY_KEY",
+        models: ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"]
+      };
+    case "openai-official":
+      return {
+        name: "openai_official",
+        protocol: "openai-images",
+        channel: "official",
+        base_url: defaultProviderBaseUrl("openai-images"),
+        api_key_env: "OPENAI_API_KEY",
+        models: ["gpt-image-2"]
+      };
+    case "gemini-official":
+      return {
+        name: "gemini_official",
+        protocol: "gemini",
+        channel: "official",
+        base_url: defaultProviderBaseUrl("gemini"),
+        api_key_env: "GEMINI_API_KEY",
+        models: ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"]
+      };
+    default:
+      throw new Error(
+        `Unknown provider template: ${templateName}. Use openai-proxy, gemini-proxy, openai-official, or gemini-official.`
+      );
+  }
+}
+
+function parseModels(raw: string): string[] {
+  return raw
+    .split(",")
+    .map((model) => model.trim())
+    .filter(Boolean);
 }
