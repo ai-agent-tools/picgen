@@ -109,11 +109,20 @@ async function testGeminiProvider(
   apiKey: string,
   model: string
 ): Promise<Response> {
-  return fetch(buildGeminiProtocolUrl(provider.base_url, `models/${encodeURIComponent(model)}`), {
-    method: "GET",
+  return fetch(buildGeminiProtocolUrl(provider.base_url, `models/${encodeURIComponent(model)}:generateContent`), {
+    method: "POST",
     headers: {
-      "x-goog-api-key": apiKey
-    }
+      "x-goog-api-key": apiKey,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: "Say OK only." }]
+        }
+      ]
+    })
   });
 }
 

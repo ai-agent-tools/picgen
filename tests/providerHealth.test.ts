@@ -67,7 +67,7 @@ describe("provider health checks", () => {
     });
   });
 
-  it("checks Gemini model metadata", async () => {
+  it("checks Gemini generateContent endpoint", async () => {
     process.env.GEMINI_API_KEY = "test-key";
     const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
@@ -75,12 +75,21 @@ describe("provider health checks", () => {
     const result = await testProvider("gemini_official", defaultConfig.providers.gemini_official);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent",
       expect.objectContaining({
-        method: "GET",
+        method: "POST",
         headers: {
-          "x-goog-api-key": "test-key"
-        }
+          "x-goog-api-key": "test-key",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: "Say OK only." }]
+            }
+          ]
+        })
       })
     );
     expect(result).toMatchObject({
