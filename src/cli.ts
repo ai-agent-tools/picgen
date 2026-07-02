@@ -12,6 +12,7 @@ import {
   setProviderEnabled
 } from "./commands/provider.js";
 import { preferMode, preferPreset } from "./commands/preferences.js";
+import { runQuickstart } from "./commands/quickstart.js";
 import { runSetup } from "./commands/setup.js";
 
 const program = new Command();
@@ -22,6 +23,8 @@ program
   .version("0.1.0-alpha.0");
 
 program.command("setup").description("Run the interactive PicGen setup wizard.").action(runSetup);
+
+program.command("quickstart").description("Print install and first-run guidance.").action(runQuickstart);
 
 program
   .command("doctor")

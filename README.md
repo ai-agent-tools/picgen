@@ -28,6 +28,7 @@ npm run build
 ```bash
 npm install -g @ai-agent-tools/picgen
 picgen --help
+picgen quickstart
 ```
 
 Agent trial prompt:
@@ -40,6 +41,7 @@ Agent trial prompt:
 
 ```bash
 picgen setup
+picgen quickstart
 picgen doctor --json
 picgen create --dry-run "一张产品发布会主视觉"
 picgen create --yes "一张产品发布会主视觉"
