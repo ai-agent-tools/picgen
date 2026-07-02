@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { Command } from "commander";
 import { runCreate } from "./commands/create.js";
 import { runDoctor } from "./commands/doctor.js";

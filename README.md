@@ -56,3 +56,10 @@ You can override it for development:
 ```bash
 PICGEN_CONFIG=/path/to/picgen.yaml npm run dev -- doctor
 ```
+
+PicGen also loads `.env` from the current working directory:
+
+```text
+PICGEN_OPENAI_PROXY_KEY=...
+PICGEN_GEMINI_PROXY_KEY=...
+```

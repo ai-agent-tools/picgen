@@ -38,6 +38,8 @@ npm test
 npm run build
 ```
 
+The CLI loads `.env` from the current working directory, so local provider keys can be set there during development.
+
 ## Architecture
 
 Keep the code organized around these layers:

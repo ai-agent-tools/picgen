@@ -30,14 +30,15 @@
   "dependencies": {
     "@inquirer/prompts": "^7.3.2",
     "commander": "^13.1.0",
+    "dotenv": "^17.4.2",
     "yaml": "^2.7.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.7",
     "eslint": "^9.18.0",
-    "tsx": "^4.19.2",
     "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "vitest": "^2.1.8"
   },
