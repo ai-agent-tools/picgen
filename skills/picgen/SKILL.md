@@ -85,6 +85,8 @@ picgen key show PICGEN_GEMINI_PROXY_KEY --json
 
 Use the web interface for user-facing setup, provider management, generation, and history browsing. Use CLI commands for agent-driven dry-runs, automation, diagnostics, and precise reproducible steps.
 
+For first-time agent-assisted setup, prefer the clipboard-based CLI flow because it keeps the user in conversation and avoids extra UI switching. Prefer the web interface when the user wants to manage multiple providers, inspect masked key sources, reveal a full key locally, generate images without CLI commands, or find saved image history.
+
 ## Workflow
 
 1. Run `picgen doctor --json` to check configuration.
