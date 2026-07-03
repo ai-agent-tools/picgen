@@ -61,7 +61,9 @@ picgen create --yes --provider gemini_official --reference ./reference.png "åŸºä
 picgen provider list
 picgen provider add
 picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer
+picgen key set PICGEN_GEMINI_PROXY_KEY --clipboard
 picgen key set PICGEN_GEMINI_PROXY_KEY --stdin
+picgen key list --json
 picgen provider test openai_official --json
 picgen provider prefer gemini_official
 picgen provider disable gemini_proxy

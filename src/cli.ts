@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { runCreate } from "./commands/create.js";
 import { runDoctor } from "./commands/doctor.js";
-import { setApiKey } from "./commands/key.js";
+import { listApiKeys, setApiKey, showApiKey } from "./commands/key.js";
 import {
   addProvider,
   editProvider,
@@ -96,15 +96,29 @@ provider
   .action((name: string) => setProviderEnabled(name, false));
 provider.command("remove").argument("<name>").description("Remove a provider.").action(removeProvider);
 
-program
-  .command("key")
-  .description("Manage PicGen API keys.")
+const key = program.command("key").description("Manage PicGen API keys.");
+
+key
   .command("set")
   .argument("<env-name>", "Environment variable name, such as PICGEN_GEMINI_PROXY_KEY.")
   .description("Save an API key to PicGen's managed env file.")
   .option("--stdin", "Read the key value from stdin.")
+  .option("--clipboard", "Read the key value from the macOS clipboard.")
   .option("--value <value>", "Set the key value directly. Prefer --stdin for agent workflows.")
   .action(setApiKey);
+
+key
+  .command("list")
+  .description("List configured provider keys without revealing secret values.")
+  .option("--json", "Print machine-readable JSON.")
+  .action(listApiKeys);
+
+key
+  .command("show")
+  .argument("<env-name>", "Environment variable name.")
+  .description("Show one configured key without revealing the secret value.")
+  .option("--json", "Print machine-readable JSON.")
+  .action(showApiKey);
 
 program
   .command("skill")

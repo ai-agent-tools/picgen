@@ -59,7 +59,7 @@ When running inside an agent environment where interactive terminal prompts are 
 
 - Provider type: Gemini or OpenAI-compatible.
 - Provider host: host only, such as `https://www.pandai.vip`; do not include `/v1` or `/v1beta`.
-- API key.
+- API key. Prefer asking the user to copy the key to their clipboard and reply "copied"; avoid asking them to paste secrets into chat.
 
 Then use non-interactive commands.
 
@@ -67,7 +67,7 @@ Gemini-compatible third-party channel:
 
 ```bash
 picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer
-picgen key set PICGEN_GEMINI_PROXY_KEY --stdin
+picgen key set PICGEN_GEMINI_PROXY_KEY --clipboard
 picgen provider test gemini_proxy --json
 ```
 
@@ -75,11 +75,20 @@ OpenAI-compatible third-party channel:
 
 ```bash
 picgen provider quick-add openai-proxy --host https://www.pandai.vip --prefer
-picgen key set PICGEN_OPENAI_PROXY_KEY --stdin
+picgen key set PICGEN_OPENAI_PROXY_KEY --clipboard
 picgen provider test openai_proxy --json
 ```
 
-Pass the API key through stdin for `picgen key set`; do not put secrets directly in shell history unless the user explicitly accepts that tradeoff. If the agent runtime cannot pass stdin safely, ask the user to run `picgen key set <ENV_NAME>` in their terminal and paste the key into the hidden prompt.
+If clipboard access is unavailable, pass the API key through stdin for `picgen key set`; do not put secrets directly in shell history unless the user explicitly accepts that tradeoff. If the agent runtime cannot pass stdin safely, ask the user to run `picgen key set <ENV_NAME>` in their terminal and paste the key into the hidden prompt.
+
+To inspect configured keys without revealing secret values:
+
+```bash
+picgen key list --json
+picgen key show PICGEN_GEMINI_PROXY_KEY --json
+```
+
+These commands show source, length, masked preview, and fingerprint only. Never ask the user to paste a key into chat just to verify it.
 
 For reference-image generation, pass local images with repeated `--reference <path>` flags:
 
@@ -127,7 +136,7 @@ PicGen redacts generated image payloads and Gemini thought signatures from metad
 
 If `doctor` reports no usable provider, configure a provider. Prefer non-interactive setup in agent environments.
 
-If an API key is missing, save it with `picgen key set <ENV_NAME> --stdin` or guide the user to run `picgen setup` when interactive prompts are visible. Name the required environment variable only when useful for debugging.
+If an API key is missing, save it with `picgen key set <ENV_NAME> --clipboard`, `--stdin`, or guide the user to run `picgen setup` when interactive prompts are visible. Name the required environment variable only when useful for debugging.
 
 If a provider is disabled, suggest enabling it or using a one-off provider override.
 
