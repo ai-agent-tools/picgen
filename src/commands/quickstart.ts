@@ -34,7 +34,7 @@ export function formatQuickstart(): string {
     '  picgen create --dry-run --reference ./reference.png "基于参考图生成一张品牌海报"',
     "",
     "Agent prompt:",
-    "  请帮我安装并配置 PicGen 生图工具。请先阅读并按这个指南执行：https://github.com/ai-agent-tools/picgen/blob/main/docs/agent-install.md 。你负责判断是否在本机持久环境、安装 CLI 和 skill、引导我配置 provider/API key，并先预览生成方案，等我确认后再生成测试图。不要让我理解命令细节，也不要让我把 API key 发到聊天里。",
+    "  请帮我安装并配置 PicGen 生图工具。请先阅读并按这个指南执行：https://raw.githubusercontent.com/ai-agent-tools/picgen/refs/heads/main/docs/agent-install.md 。你负责判断是否在本机持久环境、安装 CLI 和 skill、引导我配置 provider/API key，并先预览生成方案，等我确认后再生成测试图。不要让我理解命令细节，也不要让我把 API key 发到聊天里。",
     "",
     "Notes:",
     "  - Provider host URLs should not include /v1 or /v1beta.",
