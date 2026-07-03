@@ -14,6 +14,7 @@ describe("quickstart", () => {
     expect(output).toContain('picgen create --dry-run --preset fast-draft "一张简洁的 PicGen 测试图"');
     expect(output).toContain("--reference ./reference.png");
     expect(output).toContain("Agent prompt:");
+    expect(output).toContain("docs/agent-install.md");
     expect(output).toContain("docs/release-alpha.md");
   });
 });
