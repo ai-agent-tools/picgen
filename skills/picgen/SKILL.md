@@ -90,6 +90,8 @@ picgen key show PICGEN_GEMINI_PROXY_KEY --json
 
 These commands show source, length, masked preview, and fingerprint only. Never ask the user to paste a key into chat just to verify it.
 
+When explaining key inspection to users, say: "In this conversation I only read masked key status, not the full secret. If you need to inspect or edit the complete saved key yourself, PicGen's managed key file is `~/.picgen/.env`; a project-level `.env` in the current directory may override it; shell environment variables take highest priority."
+
 For reference-image generation, pass local images with repeated `--reference <path>` flags:
 
 ```bash

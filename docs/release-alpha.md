@@ -56,6 +56,8 @@ For non-technical users, prefer `picgen setup`. It can save provider API keys in
 
 PicGen loads this file automatically.
 
+Agents should inspect keys with `picgen key list/show`, which only prints masked status. If a technical user needs the complete saved value, point them to `~/.picgen/.env`; a project `.env` may override it, and shell environment variables have highest priority.
+
 In agent environments where interactive terminal prompts are not visible, ask the user for provider type, host, and API key in chat, then use non-interactive commands. Example for a Gemini-compatible third-party channel:
 
 ```bash

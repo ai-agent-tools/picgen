@@ -111,6 +111,8 @@ For non-technical users, `picgen setup` can save API keys for you in:
 
 PicGen loads this managed env file automatically. Shell environment variables take priority, and a project `.env` can override the managed file for local testing.
 
+When agents inspect key configuration, they should use `picgen key list/show` so chat output only contains masked key status. To inspect or edit the full saved key directly, open `~/.picgen/.env`; a project `.env` in the current directory may override it, and shell environment variables take highest priority.
+
 You can start from the included example:
 
 ```bash
