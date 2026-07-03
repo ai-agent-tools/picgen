@@ -8,6 +8,7 @@ import {
   addProvider,
   addProviderToConfig,
   defaultCapabilitiesForProtocol,
+  nextAvailableProviderApiKeyEnv,
   nextAvailableProviderName
 } from "./provider.js";
 import type { Channel, PicgenConfig, Protocol, ProviderConfig } from "../types.js";
@@ -177,7 +178,7 @@ async function quickAddProvider(): Promise<void> {
   });
   const apiKeyEnv = await input({
     message: "API key environment variable",
-    default: defaults.api_key_env
+    default: nextAvailableProviderApiKeyEnv(config, defaults.api_key_env, name)
   });
   const modelsRaw = await input({
     message: "Models (comma separated, press Enter for recommended defaults)",
@@ -248,7 +249,7 @@ function quickProviderDefaults(template: QuickProviderTemplate): {
         protocol: "openai-images",
         channel: "third_party",
         base_url: "https://www.pandai.vip",
-        api_key_env: "OPENAI_API_KEY",
+        api_key_env: "PICGEN_OPENAI_PROXY_KEY",
         models: ["gpt-image-2"]
       };
     case "gemini_proxy":
@@ -257,7 +258,7 @@ function quickProviderDefaults(template: QuickProviderTemplate): {
         protocol: "gemini",
         channel: "third_party",
         base_url: "https://www.pandai.vip",
-        api_key_env: "GEMINI_API_KEY",
+        api_key_env: "PICGEN_GEMINI_PROXY_KEY",
         models: ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"]
       };
     case "openai_official":

@@ -43,12 +43,14 @@ export async function quickAddProvider(
   const config = await loadConfig();
   const template = quickProviderTemplate(templateName);
   const name = options.name ?? nextAvailableProviderName(config, template.name);
+  const apiKeyEnv =
+    options.keyEnv ?? nextAvailableProviderApiKeyEnv(config, template.api_key_env, name);
   const provider: ProviderConfig = {
     enabled: true,
     protocol: template.protocol,
     channel: template.channel,
     base_url: normalizeProviderBaseUrl(options.host ?? template.base_url),
-    api_key_env: options.keyEnv ?? template.api_key_env,
+    api_key_env: apiKeyEnv,
     models: parseModels(options.models ?? template.models.join(",")),
     capabilities: defaultCapabilitiesForProtocol(template.protocol)
   };
@@ -196,13 +198,17 @@ async function promptProvider(
     message: "API key environment variable",
     default:
       existing?.api_key_env ??
-      (protocol === "openai-images"
-        ? channel === "official"
-          ? "OPENAI_API_KEY"
-          : "PICGEN_OPENAI_PROXY_KEY"
-        : channel === "official"
-          ? "GEMINI_API_KEY"
-          : "PICGEN_GEMINI_PROXY_KEY")
+      nextAvailableProviderApiKeyEnv(
+        config,
+        protocol === "openai-images"
+          ? channel === "official"
+            ? "OPENAI_API_KEY"
+            : "PICGEN_OPENAI_PROXY_KEY"
+          : channel === "official"
+            ? "GEMINI_API_KEY"
+            : "PICGEN_GEMINI_PROXY_KEY",
+        name
+      )
   });
 
   const defaultModels =
@@ -241,6 +247,33 @@ export function nextAvailableProviderName(
   let index = 2;
   while (config.providers[`${baseName}_${index}`]) index += 1;
   return `${baseName}_${index}`;
+}
+
+export function nextAvailableProviderApiKeyEnv(
+  config: PicgenConfig,
+  baseEnv: string,
+  providerName: string,
+  existingEnv?: string
+): string {
+  if (existingEnv) return existingEnv;
+  const usedEnvs = new Set(Object.values(config.providers).map((provider) => provider.api_key_env));
+  if (!usedEnvs.has(baseEnv)) return baseEnv;
+
+  const providerEnv = providerNameToApiKeyEnv(providerName);
+  if (!usedEnvs.has(providerEnv)) return providerEnv;
+
+  let index = 2;
+  while (usedEnvs.has(`${providerEnv}_${index}`)) index += 1;
+  return `${providerEnv}_${index}`;
+}
+
+function providerNameToApiKeyEnv(providerName: string): string {
+  const safeName = providerName
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  return `PICGEN_${safeName || "PROVIDER"}_KEY`;
 }
 
 export function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConfig["capabilities"] {

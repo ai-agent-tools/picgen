@@ -13,6 +13,7 @@ import { saveConfig } from "../src/config/store.js";
 import {
   addProviderToConfig,
   defaultCapabilitiesForProtocol,
+  nextAvailableProviderApiKeyEnv,
   nextAvailableProviderName,
   preferProvider,
   quickAddProvider
@@ -110,6 +111,19 @@ describe("preference commands", () => {
     expect(nextAvailableProviderName(config, "openai_proxy")).toBe("openai_proxy_2");
   });
 
+  it("chooses an independent API key env for duplicate provider types", () => {
+    const config = structuredClone(defaultConfig);
+    config.providers.gemini_proxy = {
+      ...defaultConfig.providers.gemini_official,
+      channel: "third_party",
+      api_key_env: "PICGEN_GEMINI_PROXY_KEY"
+    };
+
+    expect(
+      nextAvailableProviderApiKeyEnv(config, "PICGEN_GEMINI_PROXY_KEY", "gemini_proxy_2")
+    ).toBe("PICGEN_GEMINI_PROXY_2_KEY");
+  });
+
   it("uses protocol defaults for provider capabilities", () => {
     expect(defaultCapabilitiesForProtocol("openai-images")).toEqual(["text-to-image"]);
     expect(defaultCapabilitiesForProtocol("gemini")).toEqual([
@@ -138,6 +152,22 @@ describe("preference commands", () => {
         capabilities: ["text-to-image", "reference-image"]
       })
     );
+  });
+
+  it("quick-adds duplicate providers with independent API key env names", async () => {
+    await saveConfig(structuredClone(defaultConfig));
+
+    await quickAddProvider("gemini-proxy", {
+      host: "https://one.example",
+      prefer: true
+    });
+    await quickAddProvider("gemini-proxy", {
+      host: "https://two.example"
+    });
+
+    const config = await readSavedConfig();
+    expect(config.providers.gemini_proxy.api_key_env).toBe("PICGEN_GEMINI_PROXY_KEY");
+    expect(config.providers.gemini_proxy_2.api_key_env).toBe("PICGEN_GEMINI_PROXY_2_KEY");
   });
 });
 

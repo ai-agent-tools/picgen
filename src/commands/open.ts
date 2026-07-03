@@ -5,7 +5,12 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { cwd } from "node:process";
-import { addProviderToConfig, defaultCapabilitiesForProtocol, nextAvailableProviderName } from "./provider.js";
+import {
+  addProviderToConfig,
+  defaultCapabilitiesForProtocol,
+  nextAvailableProviderApiKeyEnv,
+  nextAvailableProviderName
+} from "./provider.js";
 import { toPlanOutput } from "./create.js";
 import { createGenerationRun, writeGenerationMetadata } from "../assets/output.js";
 import { getManagedEnvPath, inspectEnvVars, readEnvVarValue, saveManagedEnvVar } from "../config/env.js";
@@ -221,7 +226,7 @@ async function addProviderFromBody(body: Record<string, unknown>): Promise<Recor
   const apiKeyEnv =
     typeof body.api_key_env === "string" && body.api_key_env.trim()
       ? body.api_key_env.trim()
-      : template.api_key_env;
+      : nextAvailableProviderApiKeyEnv(config, template.api_key_env, name);
   const models =
     typeof body.models === "string" && body.models.trim()
       ? parseModels(body.models)
@@ -587,19 +592,20 @@ const appHtml = `<!doctype html>
     function templateDefaults(template){return {gemini_proxy:{protocol:'gemini',channel:'third_party',name:'gemini_proxy',host:'https://www.pandai.vip',models:'gemini-3.1-flash-image-preview, gemini-3-pro-image-preview'},openai_proxy:{protocol:'openai-images',channel:'third_party',name:'openai_proxy',host:'https://www.pandai.vip',models:'gpt-image-2'},gemini_official:{protocol:'gemini',channel:'official',name:'gemini_official',host:'https://generativelanguage.googleapis.com',models:'gemini-3.1-flash-image-preview, gemini-3-pro-image-preview'},openai_official:{protocol:'openai-images',channel:'official',name:'openai_official',host:'https://api.openai.com',models:'gpt-image-2'}}[template]}
     function renderSettings(){const s=state.data;$('#settings').innerHTML=\`
       <div class="panel"><h2>路径</h2><div class="row"><div>配置文件</div><div class="path">\${esc(s.config_path)}</div></div><div class="row"><div>PicGen 密钥文件</div><div class="path">\${esc(s.key_file_path)}</div></div><p class="hint">key 读取优先级：终端环境变量 &gt; 当前项目 .env &gt; PicGen 管理文件。</p></div>
-      <div class="panel"><div class="split"><h2>渠道</h2><button class="primary" id="addProviderBtn">添加渠道</button></div><div id="providers"></div></div>
-      <div class="panel hidden" id="providerForm"><h2>添加渠道</h2>
+      <div class="panel"><div class="split"><h2>渠道</h2><button class="primary" id="addProviderBtn">添加渠道</button></div>
+      <div class="hidden" id="providerForm" style="margin:12px 0 14px"><h2>添加渠道</h2>
         <div class="formgrid">
           <label class="full">渠道类型<select id="newTemplate"><option value="gemini_proxy">第三方 Gemini</option><option value="openai_proxy">第三方 OpenAI 兼容</option><option value="gemini_official">官方 Gemini</option><option value="openai_official">官方 OpenAI</option></select></label>
           <label>名称<input id="newName" placeholder="自动"></label>
           <label>Host<input id="newHost" value="https://www.pandai.vip"></label>
           <label class="full">API key<input id="newKey" type="password" placeholder="保存在本机，不写入聊天"></label>
+          <p class="hint full">每个新渠道会自动分配独立的 key 名称，避免多个渠道互相覆盖。</p>
           <label class="full">模型列表<input id="newModels" placeholder="使用推荐默认值"></label>
           <label><input id="newPrefer" type="checkbox" checked style="width:auto"> 设为默认渠道</label>
           <div class="actions"><button class="primary" id="saveProvider">保存渠道</button><button id="cancelProvider">取消</button></div>
         </div>
-      </div>\`;
-      $('#addProviderBtn').onclick=()=>$('#providerForm').classList.remove('hidden');$('#cancelProvider').onclick=()=>$('#providerForm').classList.add('hidden');$('#saveProvider').onclick=saveProvider;$('#newTemplate').onchange=applyProviderTemplate;applyProviderTemplate();
+      </div><div id="providers"></div></div>\`;
+      $('#addProviderBtn').onclick=()=>{const form=$('#providerForm');form.classList.remove('hidden');form.scrollIntoView({block:'nearest'});};$('#cancelProvider').onclick=()=>$('#providerForm').classList.add('hidden');$('#saveProvider').onclick=saveProvider;$('#newTemplate').onchange=applyProviderTemplate;applyProviderTemplate();
       $('#providers').innerHTML=s.providers.map(providerCard).join('') || '<p class="muted">还没有配置渠道。</p>';
       bindProviderActions();
     }
