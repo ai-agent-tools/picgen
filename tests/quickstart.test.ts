@@ -5,6 +5,8 @@ describe("quickstart", () => {
   it("prints install and first-run guidance", () => {
     const output = formatQuickstart();
 
+    expect(output).toContain("node -v");
+    expect(output).toContain("npm -v");
     expect(output).toContain("npm install -g @ai-agent-tools/picgen");
     expect(output).toContain("npx -y skills add ai-agent-tools/picgen --skill picgen");
     expect(output).toContain("picgen skill install codex");

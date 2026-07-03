@@ -26,6 +26,8 @@ npm run build
 ## Install
 
 ```bash
+node -v
+npm -v
 npm install -g @ai-agent-tools/picgen
 npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
 picgen skill install codex
@@ -38,7 +40,7 @@ Use `npx -y skills add ...` for cross-agent skill installation when supported. `
 Agent trial prompt:
 
 ```text
-请安装并体验 @ai-agent-tools/picgen：先执行 npm install -g @ai-agent-tools/picgen@latest 安装 CLI，再执行 npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy 安装 PicGen skill。如果 skills 安装器不可用且当前是 Codex，请改用 picgen skill install codex。然后引导我配置 provider 和 API key，先预览生成方案，等我确认后再生成测试图。
+请帮我安装并配置 PicGen 生图工具。安装前请先检查这台电脑是否已经安装 Node.js 和 npm。如果没有安装，请先指导我安装 Node.js LTS 版本，并验证 node -v 和 npm -v 是否能正常显示版本号。然后执行 npm install -g @ai-agent-tools/picgen@latest 安装 CLI，再执行 npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy 安装 PicGen skill。如果 skills 安装器不可用且当前是 Codex，请改用 picgen skill install codex。然后引导我配置 provider 和 API key，先预览生成方案，等我确认后再生成测试图。
 ```
 
 For first-user rollout, see [docs/release-alpha.md](./docs/release-alpha.md).
