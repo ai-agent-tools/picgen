@@ -1,5 +1,6 @@
 import { confirm, input, password, select } from "@inquirer/prompts";
 import { getManagedEnvPath, saveManagedEnvVar } from "../config/env.js";
+import { nextAvailableProviderApiKeyEnv } from "../config/providerKeys.js";
 import { setPreferredMode, setPreferredProvider } from "../config/preferences.js";
 import { ensureConfig, getConfigPath, loadConfig, saveConfig } from "../config/store.js";
 import { testProvider } from "../providers/health.js";
@@ -8,7 +9,6 @@ import {
   addProvider,
   addProviderToConfig,
   defaultCapabilitiesForProtocol,
-  nextAvailableProviderApiKeyEnv,
   nextAvailableProviderName
 } from "./provider.js";
 import type { Channel, PicgenConfig, Protocol, ProviderConfig } from "../types.js";

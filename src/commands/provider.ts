@@ -1,4 +1,5 @@
 import { input, select } from "@inquirer/prompts";
+import { nextAvailableProviderApiKeyEnv } from "../config/providerKeys.js";
 import { setPreferredProvider } from "../config/preferences.js";
 import { loadConfig, saveConfig } from "../config/store.js";
 import { testProvider } from "../providers/health.js";
@@ -247,33 +248,6 @@ export function nextAvailableProviderName(
   let index = 2;
   while (config.providers[`${baseName}_${index}`]) index += 1;
   return `${baseName}_${index}`;
-}
-
-export function nextAvailableProviderApiKeyEnv(
-  config: PicgenConfig,
-  baseEnv: string,
-  providerName: string,
-  existingEnv?: string
-): string {
-  if (existingEnv) return existingEnv;
-  const usedEnvs = new Set(Object.values(config.providers).map((provider) => provider.api_key_env));
-  if (!usedEnvs.has(baseEnv)) return baseEnv;
-
-  const providerEnv = providerNameToApiKeyEnv(providerName);
-  if (!usedEnvs.has(providerEnv)) return providerEnv;
-
-  let index = 2;
-  while (usedEnvs.has(`${providerEnv}_${index}`)) index += 1;
-  return `${providerEnv}_${index}`;
-}
-
-function providerNameToApiKeyEnv(providerName: string): string {
-  const safeName = providerName
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-  return `PICGEN_${safeName || "PROVIDER"}_KEY`;
 }
 
 export function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConfig["capabilities"] {

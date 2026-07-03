@@ -118,6 +118,8 @@ PicGen loads this managed env file automatically. Shell environment variables ta
 
 Each provider should have its own `api_key_env` value. When adding another provider of the same type, PicGen assigns a new key name by default, such as `PICGEN_GEMINI_PROXY_2_KEY`, so multiple channels do not overwrite each other's API keys.
 
+Older configs that reused the same `api_key_env` across multiple providers are migrated automatically when PicGen loads the config. PicGen keeps the first provider unchanged, assigns unique key names to the later providers, and copies the existing key value into the managed env file when the value is available.
+
 When agents inspect key configuration, they should use `picgen key list/show` so chat output only contains masked key status. To inspect or edit the full saved key directly, open `~/.picgen/.env`; a project `.env` in the current directory may override it, and shell environment variables take highest priority.
 
 You can start from the included example:

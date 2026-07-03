@@ -9,11 +9,11 @@ import {
   setPreferredPreset,
   setPreferredProvider
 } from "../src/config/preferences.js";
+import { nextAvailableProviderApiKeyEnv } from "../src/config/providerKeys.js";
 import { saveConfig } from "../src/config/store.js";
 import {
   addProviderToConfig,
   defaultCapabilitiesForProtocol,
-  nextAvailableProviderApiKeyEnv,
   nextAvailableProviderName,
   preferProvider,
   quickAddProvider

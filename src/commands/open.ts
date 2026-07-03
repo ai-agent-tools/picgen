@@ -5,15 +5,11 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { createReadStream } from "node:fs";
 import { extname, join, resolve } from "node:path";
 import { cwd } from "node:process";
-import {
-  addProviderToConfig,
-  defaultCapabilitiesForProtocol,
-  nextAvailableProviderApiKeyEnv,
-  nextAvailableProviderName
-} from "./provider.js";
+import { addProviderToConfig, defaultCapabilitiesForProtocol, nextAvailableProviderName } from "./provider.js";
 import { toPlanOutput } from "./create.js";
 import { createGenerationRun, writeGenerationMetadata } from "../assets/output.js";
 import { getManagedEnvPath, inspectEnvVars, readEnvVarValue, saveManagedEnvVar } from "../config/env.js";
+import { nextAvailableProviderApiKeyEnv } from "../config/providerKeys.js";
 import { setPreferredProvider } from "../config/preferences.js";
 import { getConfigPath, loadConfig, saveConfig } from "../config/store.js";
 import { getAdapter } from "../providers/adapters.js";
