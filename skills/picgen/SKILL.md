@@ -17,10 +17,32 @@ Only suggest PicGen when the user discusses visual direction, mood, brand style,
 
 Never silently spend user quota. Do not send full conversation context to providers by default; summarize only the visual details needed for the final prompt.
 
+## Installation
+
+If `picgen` is not available, install the CLI first:
+
+```bash
+npm install -g @ai-agent-tools/picgen@latest
+```
+
+To install or update this skill for supported agents, prefer the standard Skills installer:
+
+```bash
+npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
+```
+
+For Codex only, the CLI also provides a direct fallback:
+
+```bash
+picgen skill install codex --force
+```
+
+After installing or updating a skill, the user may need to restart the agent or open a new session before the skill is visible.
+
 ## Workflow
 
 1. Run `picgen doctor --json` to check configuration.
-2. If no usable provider is configured, guide the user to run `picgen setup`. The setup wizard can configure providers and save API keys for non-technical users.
+2. If no usable provider is configured, configure one before generation.
 3. Choose a preset from the user's intent, such as `poster`, `product-shot`, or `social-cover`.
 4. Run `picgen create --dry-run --preset <preset> "<prompt>"`.
 5. Present the dry-run as a user-facing generation preview. Do not expose `dry-run` as a technical term unless useful.
@@ -29,7 +51,19 @@ Never silently spend user quota. Do not send full conversation context to provid
 
 If the user explicitly says to generate directly or not ask for confirmation, you may skip the user-facing confirmation step. Still form a generation plan internally.
 
-When running inside an agent environment where interactive terminal prompts are not visible, do not run `picgen setup` as a blocking wizard. Ask the user for the provider type, host, and API key in chat, then use non-interactive commands:
+## Provider Setup
+
+When terminal prompts are visible to the user, `picgen setup` is acceptable.
+
+When running inside an agent environment where interactive terminal prompts are not visible, do not run `picgen setup` as a blocking wizard. Ask the user for:
+
+- Provider type: Gemini or OpenAI-compatible.
+- Provider host: host only, such as `https://www.pandai.vip`; do not include `/v1` or `/v1beta`.
+- API key.
+
+Then use non-interactive commands.
+
+Gemini-compatible third-party channel:
 
 ```bash
 picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer
@@ -37,7 +71,15 @@ picgen key set PICGEN_GEMINI_PROXY_KEY --stdin
 picgen provider test gemini_proxy --json
 ```
 
-Pass the API key through stdin for `picgen key set`; do not put secrets directly in shell history unless the user explicitly accepts that tradeoff.
+OpenAI-compatible third-party channel:
+
+```bash
+picgen provider quick-add openai-proxy --host https://www.pandai.vip --prefer
+picgen key set PICGEN_OPENAI_PROXY_KEY --stdin
+picgen provider test openai_proxy --json
+```
+
+Pass the API key through stdin for `picgen key set`; do not put secrets directly in shell history unless the user explicitly accepts that tradeoff. If the agent runtime cannot pass stdin safely, ask the user to run `picgen key set <ENV_NAME>` in their terminal and paste the key into the hidden prompt.
 
 For reference-image generation, pass local images with repeated `--reference <path>` flags:
 
@@ -83,9 +125,9 @@ PicGen redacts generated image payloads and Gemini thought signatures from metad
 
 ## Error Handling
 
-If `doctor` reports no usable provider, ask the user to run `picgen setup`.
+If `doctor` reports no usable provider, configure a provider. Prefer non-interactive setup in agent environments.
 
-If an API key is missing, guide the user to run `picgen setup` and choose `Configure API key`. Name the required environment variable only when useful for debugging.
+If an API key is missing, save it with `picgen key set <ENV_NAME> --stdin` or guide the user to run `picgen setup` when interactive prompts are visible. Name the required environment variable only when useful for debugging.
 
 If a provider is disabled, suggest enabling it or using a one-off provider override.
 
