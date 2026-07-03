@@ -39,6 +39,31 @@ picgen skill install codex --force
 
 After installing or updating a skill, the user may need to restart the agent or open a new session before the skill is visible.
 
+## Environment Check
+
+Before installing the CLI, installing skills, or saving API keys, check whether the current terminal is the user's persistent local environment or a sandbox/temporary environment.
+
+Use lightweight checks such as:
+
+```bash
+pwd
+echo "$HOME"
+node -v
+npm -v
+npm root -g
+which picgen || true
+```
+
+If the environment appears persistent and user-level, continue setup there.
+
+If the environment appears sandboxed, remote, temporary, reset between sessions, or unable to write to the user's real home directory, do not install PicGen, install skills, or save API keys there. First request permission to use the user's host/persistent terminal or a persistent user-level environment. Example user-facing wording:
+
+```text
+我检测到当前可能是临时沙箱。PicGen 需要安装到你的本机持久环境，否则新会话可能会丢失 CLI、skill 或 API key。请允许我在本机持久环境中继续安装和配置；如果无法授权，我再给你最少的本机终端命令。
+```
+
+If permission is granted, continue installation and provider setup in that persistent environment. If permission is unavailable or denied, give the user a minimal copy-paste command sequence for their local terminal. Keep manual instructions short and explain only what the user must do.
+
 ## Workflow
 
 1. Run `picgen doctor --json` to check configuration.
