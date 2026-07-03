@@ -111,7 +111,7 @@ describe("PicGen env loading", () => {
       set: true,
       source: "managed",
       length: 19,
-      preview: "secr...3456"
+      preview: "secret-...3456"
     });
 
     const [inspection] = await inspectEnvVars(["PICGEN_TEST_KEY", "PICGEN_TEST_KEY"]);
@@ -139,7 +139,7 @@ describe("PicGen env loading", () => {
     }
 
     expect(lines.join("\n")).toContain("PICGEN_TEST_KEY: set");
-    expect(lines.join("\n")).toContain("preview=comm...cret");
+    expect(lines.join("\n")).toContain("preview=command...cret");
     expect(lines.join("\n")).not.toContain("command-secret");
   });
 });

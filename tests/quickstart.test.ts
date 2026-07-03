@@ -11,7 +11,7 @@ describe("quickstart", () => {
     expect(output).toContain("npx -y skills add ai-agent-tools/picgen --skill picgen");
     expect(output).toContain("picgen skill install codex");
     expect(output).toContain("picgen setup");
-    expect(output).toContain('picgen create --dry-run "一张极简科技感产品海报"');
+    expect(output).toContain('picgen create --dry-run --preset fast-draft "一张简洁的 PicGen 测试图"');
     expect(output).toContain("--reference ./reference.png");
     expect(output).toContain("Agent prompt:");
     expect(output).toContain("docs/release-alpha.md");

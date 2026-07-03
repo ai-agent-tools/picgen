@@ -103,6 +103,36 @@ Use Gemini providers for reference-image generation in Alpha. The OpenAI-compati
 
 PicGen routes by provider capabilities. When reference images are provided, agents may omit `--provider` and let PicGen select a provider that supports `reference-image`, unless the user explicitly requested a provider.
 
+## First Smoke Test
+
+After configuring a provider, run the first test generation with a low-cost, fast, one-image plan. Do not use `poster`, `product-shot`, `social-cover`, premium modes, large sizes, or multi-image presets for initial verification.
+
+For Gemini providers, prefer the flash image model for the first test:
+
+```bash
+picgen create --dry-run --provider gemini_proxy --preset fast-draft --model gemini-3.1-flash-image-preview "一张简洁的 PicGen 测试图，白色背景，少量蓝绿色科技感点缀"
+picgen create --yes --provider gemini_proxy --preset fast-draft --model gemini-3.1-flash-image-preview "一张简洁的 PicGen 测试图，白色背景，少量蓝绿色科技感点缀"
+```
+
+For OpenAI-compatible providers:
+
+```bash
+picgen create --dry-run --provider openai_proxy --preset fast-draft "一张简洁的 PicGen 测试图，白色背景，少量蓝绿色科技感点缀"
+picgen create --yes --provider openai_proxy --preset fast-draft "一张简洁的 PicGen 测试图，白色背景，少量蓝绿色科技感点缀"
+```
+
+Present the dry-run preview and ask for confirmation before the real generation unless the user explicitly asked to generate immediately. The first smoke test should generate one image.
+
+## After Provider Success
+
+After one provider is configured and the first smoke test succeeds, tell the user the provider is ready and ask whether they want to add another channel as a fallback. Example:
+
+```text
+Gemini 渠道已经配置并测试成功。你还可以继续添加另一个渠道作为备用，例如 OpenAI-compatible。要继续添加吗？
+```
+
+If the user says yes, repeat provider setup and smoke testing for the next channel. If the user says no, stop setup and tell them PicGen is ready to use.
+
 ## Preferences and Overrides
 
 Treat `picgen create` flags as one-off overrides. They must not change user preferences:
@@ -157,14 +187,14 @@ Explicit:
 Confirmation:
 
 ```text
-我可以用 PicGen 基于当前方案生成一版主视觉。要我现在生成吗？默认用 poster 预设，出 2 张。
+我可以先用 PicGen 做一次轻量测试生成，默认只出 1 张，确认工具和渠道都可用。要我现在开始吗？
 ```
 
 Generation preview:
 
 ```text
 生成预览：
-我将使用 OpenAI 官方渠道生成 2 张发布会海报，比例 3:4，保存到本地。
+我将使用当前渠道生成 1 张轻量测试图，保存到本地。
 
 确认后开始生成。
 ```

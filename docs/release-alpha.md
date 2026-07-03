@@ -94,7 +94,7 @@ picgen update check
 Always start with dry-run:
 
 ```bash
-picgen create --dry-run "一张极简科技感产品海报"
+picgen create --dry-run --preset fast-draft "一张简洁的 PicGen 测试图"
 ```
 
 Dry-run does not call providers and does not spend quota.

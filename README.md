@@ -54,8 +54,8 @@ npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
 picgen skill install codex
 picgen update check
 picgen doctor --json
-picgen create --dry-run "一张产品发布会主视觉"
-picgen create --yes "一张产品发布会主视觉"
+picgen create --dry-run --preset fast-draft "一张简洁的 PicGen 测试图"
+picgen create --yes --preset fast-draft "一张简洁的 PicGen 测试图"
 picgen create --dry-run --provider gemini_official --reference ./reference.png "基于参考图生成一张品牌海报"
 picgen create --yes --provider gemini_official --reference ./reference.png "基于参考图生成一张品牌海报"
 picgen provider list

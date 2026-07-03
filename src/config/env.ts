@@ -140,6 +140,6 @@ function describeEnvValue(
 }
 
 function maskSecret(value: string): string {
-  if (value.length <= 8) return "*".repeat(value.length);
-  return `${value.slice(0, 4)}...${value.slice(-4)}`;
+  if (value.length <= 11) return "*".repeat(value.length);
+  return `${value.slice(0, 7)}...${value.slice(-4)}`;
 }
