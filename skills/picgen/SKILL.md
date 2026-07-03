@@ -64,6 +64,27 @@ If the environment appears sandboxed, remote, temporary, reset between sessions,
 
 If permission is granted, continue installation and provider setup in that persistent environment. If permission is unavailable or denied, give the user a minimal copy-paste command sequence for their local terminal. Keep manual instructions short and explain only what the user must do.
 
+## Local Web Interface
+
+If the user says "open PicGen", "打开 PicGen", "打开生图工具", asks for a visual settings page, wants to generate without learning CLI commands, or wants to find previously generated images, start the local web interface:
+
+```bash
+picgen open
+```
+
+Return the printed local URL to the user. PicGen binds to `127.0.0.1`, defaults to port `8188`, and automatically tries the next ports if needed. The server runs in the foreground; the user or agent should keep the terminal running while the page is in use and close it with Ctrl+C when finished.
+
+If the current environment appears sandboxed, remote, or temporary, first request access to the user's persistent local environment before running `picgen open`. If that is impossible, give the user one short instruction to run `picgen open` in their local terminal and open the printed URL.
+
+The local page may show full API keys only inside the user's browser after an explicit reveal action. In chat, inspect keys only with masked commands such as:
+
+```bash
+picgen key list --json
+picgen key show PICGEN_GEMINI_PROXY_KEY --json
+```
+
+Use the web interface for user-facing setup, provider management, generation, and history browsing. Use CLI commands for agent-driven dry-runs, automation, diagnostics, and precise reproducible steps.
+
 ## Workflow
 
 1. Run `picgen doctor --json` to check configuration.

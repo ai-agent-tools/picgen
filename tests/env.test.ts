@@ -7,6 +7,7 @@ import {
   inspectEnvVar,
   inspectEnvVars,
   loadPicgenEnv,
+  readEnvVarValue,
   saveManagedEnvVar
 } from "../src/config/env.js";
 import { listApiKeys, setApiKey, showApiKey } from "../src/commands/key.js";
@@ -91,6 +92,24 @@ describe("PicGen env loading", () => {
     await loadPicgenEnv();
 
     expect(process.env.PICGEN_TEST_KEY).toBe("shell");
+  });
+
+  it("reads full key values with shell, project, then managed precedence", async () => {
+    await saveManagedEnvVar("PICGEN_TEST_KEY", "managed");
+    delete process.env.PICGEN_TEST_KEY;
+
+    await expect(readEnvVarValue("PICGEN_TEST_KEY")).resolves.toBe("managed");
+
+    const projectDir = join(tempDir, "project-read");
+    await mkdir(projectDir);
+    await writeFile(join(projectDir, ".env"), "PICGEN_TEST_KEY=project\n", "utf8");
+    process.chdir(projectDir);
+
+    await expect(readEnvVarValue("PICGEN_TEST_KEY")).resolves.toBe("project");
+
+    process.env.PICGEN_TEST_KEY = "shell";
+
+    await expect(readEnvVarValue("PICGEN_TEST_KEY")).resolves.toBe("shell");
   });
 
   it("sets API keys through the command helper", async () => {

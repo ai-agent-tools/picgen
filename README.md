@@ -10,6 +10,7 @@ Alpha goals:
 - Gemini reference-image generation
 - `provider + preset + routing` configuration
 - `picgen setup`, `picgen doctor`, `picgen create --dry-run`
+- Local web interface with settings, generation, and history
 - Local Codex skill instructions
 
 ## Development
@@ -33,6 +34,7 @@ npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
 picgen skill install codex
 picgen --help
 picgen quickstart
+picgen open
 ```
 
 Use `npx -y skills add ...` for cross-agent skill installation when supported. `picgen skill install codex` is a Codex-only fallback that copies the bundled skill into `~/.codex/skills/picgen`.
@@ -50,6 +52,7 @@ For agent-assisted installation, see [docs/agent-install.md](./docs/agent-instal
 ```bash
 picgen setup
 picgen quickstart
+picgen open
 npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
 picgen skill install codex
 picgen update check
@@ -77,6 +80,8 @@ picgen preset prefer poster
 Quick-add setup asks only for the essentials: provider name, host URL, API key environment variable, and model list with recommended defaults. Advanced custom setup is still available when you need to choose protocol and channel manually.
 
 Real `picgen create` calls ask for confirmation before contacting a provider. Use `--yes` only when you want to skip that CLI confirmation.
+
+`picgen open` starts a local web interface at `127.0.0.1`, defaulting to port `8188`. It is a foreground local server: keep the terminal open while using the page, and press Ctrl+C to close it. The page can configure multiple providers, save API keys to PicGen's managed env file, preview generation plans, generate images, and browse saved history under `outputs/picgen`.
 
 `--reference <path>` can be repeated to pass local reference images. Alpha supports reference images through the Gemini adapter. The OpenAI-compatible `/v1/images/generations` adapter does not support reference images yet; use a Gemini provider for reference-image generation.
 

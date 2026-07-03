@@ -51,6 +51,7 @@ npm -v
 ```bash
 npm install -g @ai-agent-tools/picgen@latest
 picgen --version
+picgen open --help
 ```
 
 安装 PicGen skill：
@@ -66,6 +67,25 @@ picgen skill install codex --force
 ```
 
 如果安装后 Agent 暂时看不到 skill，请提醒用户重启 Agent 或新开一个会话。
+
+## 3.1 打开本地网页
+
+如果用户说“打开 PicGen”、“打开生图工具”、“我想用网页配置/生图/找回图片”，请启动本地网页：
+
+```bash
+picgen open
+```
+
+PicGen 默认绑定本机 `127.0.0.1:8188`。如果端口被占用，会自动尝试后续端口。把命令输出的 URL 发给用户即可。这个服务不是常驻后台服务，终端关闭后网页也会关闭。
+
+如果当前是沙箱或临时环境，不要在沙箱里启动给用户使用的网页；请先申请使用用户本机持久环境。无法申请时，再指导用户在本机终端执行 `picgen open`。
+
+网页适合普通用户完成这些事：
+
+- 配置多个 provider，并选择默认 provider。
+- 保存和查看 API key；默认脱敏，用户可在本地页面点击眼睛图标查看完整 key。
+- 预览生成方案，确认后生成图片。
+- 查看历史记录和本地保存路径，找回生成过的图片。
 
 ## 4. 配置 Provider
 

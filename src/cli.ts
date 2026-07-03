@@ -2,6 +2,7 @@ import { Command } from "commander";
 import { runCreate } from "./commands/create.js";
 import { runDoctor } from "./commands/doctor.js";
 import { listApiKeys, setApiKey, showApiKey } from "./commands/key.js";
+import { runOpen } from "./commands/open.js";
 import {
   addProvider,
   editProvider,
@@ -32,6 +33,13 @@ program
 program.command("setup").description("Run the interactive PicGen setup wizard.").action(runSetup);
 
 program.command("quickstart").description("Print install and first-run guidance.").action(runQuickstart);
+
+program
+  .command("open")
+  .description("Open the local PicGen web interface.")
+  .option("--port <port>", "Preferred local port. Defaults to 8188.")
+  .option("--no-open", "Print the URL without opening the browser.")
+  .action(runOpen);
 
 program
   .command("doctor")

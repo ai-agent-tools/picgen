@@ -16,6 +16,9 @@ export function formatQuickstart(): string {
     "  npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy",
     "  picgen skill install codex",
     "",
+    "Open local web UI:",
+    "  picgen open",
+    "",
     "Configure:",
     "  picgen setup  # can save provider API keys for you",
     "  picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer",
@@ -39,6 +42,7 @@ export function formatQuickstart(): string {
     "Notes:",
     "  - Provider host URLs should not include /v1 or /v1beta.",
     "  - picgen setup can store API keys in ~/.picgen/.env.",
+    "  - picgen open starts a foreground local web UI on 127.0.0.1:8188.",
     "  - Agent workflows should dry-run before real generation.",
     "  - Generated images are saved locally; do not paste base64 into chat.",
     "  - First-user rollout checklist: docs/release-alpha.md"

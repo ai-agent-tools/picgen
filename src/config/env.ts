@@ -81,6 +81,16 @@ export async function inspectEnvVars(names: string[]): Promise<EnvVarInspection[
   return Promise.all(uniqueNames.map((name) => inspectEnvVar(name)));
 }
 
+export async function readEnvVarValue(name: string): Promise<string | undefined> {
+  if (process.env[name] !== undefined) return process.env[name];
+
+  const project = await readEnvFile(resolve(process.cwd(), ".env"));
+  if (project[name] !== undefined) return project[name];
+
+  const managed = await readEnvFile(getManagedEnvPath());
+  return managed[name];
+}
+
 async function loadEnvFile(
   path: string,
   shellEnv: Set<string>,
