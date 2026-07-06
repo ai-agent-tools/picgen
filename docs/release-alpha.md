@@ -212,7 +212,7 @@ git push github main --follow-tags
 
 The workflow only publishes on pushed tags matching `v*`. Normal pushes to `main` do not publish.
 
-The tag version and `package.json` version must match. npm versions are immutable; never reuse a version that has already been published.
+The tag version and `package.json` version must match. npm versions are immutable; never reuse a version that has already been published. Alpha prereleases are published with an explicit npm dist-tag so npm accepts the prerelease publish and `@latest` installs continue to work for current trial users.
 
 After publishing, ask trial users to upgrade with:
 
