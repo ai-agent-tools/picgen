@@ -32,6 +32,7 @@ export function formatGenerationPreview(plan: GenerationPlanOutput): string {
     `Preset: ${plan.preset}`,
     `Images: ${plan.n}`,
     `Reference images: ${plan.reference_images.length}`,
+    `Mask image: ${plan.mask_image ? "yes" : "no"}`,
     `Aspect ratio: ${plan.aspect_ratio}`,
     `Output: ${plan.output_directory}`
   ].join("\n");

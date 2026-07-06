@@ -6,9 +6,9 @@ PicGen is a lightweight image generation connector for AI agents. It lets users 
 
 Alpha focuses only on image generation:
 
-- OpenAI-compatible `/v1/images/generations`
+- OpenAI-compatible `/v1/images/generations` and `/v1/images/edits`
 - Gemini image API
-- Gemini reference-image generation
+- Reference-image and mask-guided image editing
 - local CLI
 - local Codex skill
 - provider lifecycle management
@@ -31,7 +31,7 @@ PicGen uses four layers:
 - `mode`: model preference such as fast, balanced, or premium
 - `preset`: usage defaults such as poster, product shot, social cover
 - `routing`: default provider, fallback providers, and default mode
-- `capability`: whether a provider supports text-to-image, reference-image, or future workflows
+- `capability`: whether a provider supports text-to-image, reference-image, multi-reference-image, mask-guided-edit, native-inpaint, or future workflows
 
 Users should not need to provide model, resolution, aspect ratio, or quality on every request. Setup and presets hold those choices.
 
@@ -62,7 +62,7 @@ PicGen should be visible to agents, but should not silently spend quota.
 Use `picgen create --dry-run` to show the planned provider, model, preset, aspect ratio, quantity, and prompt before generation.
 Manual CLI generation asks for confirmation before contacting a provider. `--yes` skips that confirmation for explicit user-driven calls.
 
-Reference images are passed with repeated `--reference <path>` flags. Alpha supports reference images through Gemini `generateContent` by sending local files as inline image parts. OpenAI-compatible reference-image editing should be implemented as a separate adapter later; the `/v1/images/generations` adapter must not silently ignore reference images.
+Reference images are passed with repeated `--reference <path>` flags. OpenAI-compatible providers use `/v1/images/edits` for reference-image generation; Gemini providers use `generateContent` by sending local files as inline image parts. Local mask edits use `--mask <path>` with at least one `--reference`: OpenAI-compatible providers send native masks to `/v1/images/edits`, while Gemini treats masks as guidance images with explicit edit instructions.
 
 ## Alpha Commands
 
@@ -96,9 +96,9 @@ The repository currently implements:
 - doctor JSON output
 - dry-run generation planning
 - local output asset and metadata writing
-- OpenAI-compatible image generation call
+- OpenAI-compatible image generation and image edit calls
 - Gemini generateContent image generation call
-- Gemini reference-image generation call
+- Gemini reference-image and mask-guided generation calls
 - provider response redaction for generated image data and Gemini thought signatures
 - routing tests
 

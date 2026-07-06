@@ -75,4 +75,29 @@ describe("config migrations", () => {
       "PICGEN_GEMINI_PROXY_2_KEY"
     );
   });
+
+  it("upgrades provider capabilities for newly supported image workflows", async () => {
+    const config = structuredClone(defaultConfig);
+    config.providers.openai_official.capabilities = ["text-to-image"];
+    config.providers.gemini_official.capabilities = ["text-to-image", "reference-image"];
+
+    await mkdir(tempDir, { recursive: true });
+    await writeFile(process.env.PICGEN_CONFIG!, YAML.stringify(config), "utf8");
+
+    const migrated = await loadConfig();
+
+    expect(migrated.providers.openai_official.capabilities).toEqual([
+      "text-to-image",
+      "reference-image",
+      "multi-reference-image",
+      "mask-guided-edit",
+      "native-inpaint"
+    ]);
+    expect(migrated.providers.gemini_official.capabilities).toEqual([
+      "text-to-image",
+      "reference-image",
+      "multi-reference-image",
+      "mask-guided-edit"
+    ]);
+  });
 });

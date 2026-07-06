@@ -190,6 +190,56 @@ describe("Gemini generateContent adapter", () => {
     ]);
   });
 
+  it("sends masks as the final inlineData part with mask-guided instructions", async () => {
+    const referencePath = join(tempDir, "reference.png");
+    const maskPath = join(tempDir, "mask.png");
+    await writeFile(referencePath, "reference image");
+    await writeFile(maskPath, "mask image");
+    const planWithMask = {
+      ...plan,
+      referenceImages: [
+        {
+          path: referencePath,
+          mime_type: "image/png",
+          bytes: 15
+        }
+      ],
+      maskImage: {
+        path: maskPath,
+        mime_type: "image/png",
+        bytes: 10
+      }
+    };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(geminiResponse("generated image 1", "image/png"))
+      .mockResolvedValueOnce(geminiResponse("generated image 2", "image/png"));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const run = await createGenerationRun(planWithMask, new Date("2026-07-02T10:11:12"));
+    await new GeminiAdapter().generate(planWithMask, run);
+
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(body.contents[0].parts[0].text).toContain("mask-guided edit");
+    expect(body.contents[0].parts).toEqual([
+      expect.objectContaining({
+        text: expect.stringContaining("Only modify the area indicated by the mask")
+      }),
+      {
+        inlineData: {
+          mimeType: "image/png",
+          data: Buffer.from("reference image").toString("base64")
+        }
+      },
+      {
+        inlineData: {
+          mimeType: "image/png",
+          data: Buffer.from("mask image").toString("base64")
+        }
+      }
+    ]);
+  });
+
   it("surfaces provider error messages", async () => {
     vi.stubGlobal(
       "fetch",

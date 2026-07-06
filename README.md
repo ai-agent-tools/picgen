@@ -5,9 +5,9 @@ PicGen is a lightweight image generation connector for AI agents. It lets Codex 
 Alpha goals:
 
 - TypeScript Node.js CLI
-- OpenAI-compatible `/v1/images/generations` adapter
+- OpenAI-compatible `/v1/images/generations` and `/v1/images/edits` adapter
 - Gemini image API adapter
-- Gemini reference-image generation
+- Reference-image and mask-guided image editing
 - `provider + preset + routing` configuration
 - `picgen setup`, `picgen doctor`, `picgen create --dry-run`
 - Local web interface with settings, generation, and history
@@ -59,8 +59,9 @@ picgen update check
 picgen doctor --json
 picgen create --dry-run --preset fast-draft "一张简洁的 PicGen 测试图"
 picgen create --yes --preset fast-draft "一张简洁的 PicGen 测试图"
-picgen create --dry-run --provider gemini_official --reference ./reference.png "基于参考图生成一张品牌海报"
-picgen create --yes --provider gemini_official --reference ./reference.png "基于参考图生成一张品牌海报"
+picgen create --dry-run --reference ./reference.png "基于参考图生成一张品牌海报"
+picgen create --yes --reference ./reference.png "基于参考图生成一张品牌海报"
+picgen create --dry-run --reference ./room.png --mask ./mask.png "只把沙发换成蓝色"
 picgen provider list
 picgen provider add
 picgen provider quick-add gemini-proxy --host https://www.pandai.vip --prefer
@@ -83,7 +84,7 @@ Real `picgen create` calls ask for confirmation before contacting a provider. Us
 
 `picgen open` starts a local web interface at `127.0.0.1`, defaulting to port `8188`. It is a foreground local server: keep the terminal open while using the page, and press Ctrl+C to close it. The page can configure multiple providers, save API keys to PicGen's managed env file, preview generation plans, generate images, and browse saved history under `outputs/picgen`.
 
-`--reference <path>` can be repeated to pass local reference images. Alpha supports reference images through the Gemini adapter. The OpenAI-compatible `/v1/images/generations` adapter does not support reference images yet; use a Gemini provider for reference-image generation.
+`--reference <path>` can be repeated to pass local reference images. OpenAI-compatible providers use `/v1/images/edits` for reference-image generation, while Gemini providers pass references through `generateContent`. `--mask <path>` can be used with `--reference` for local edits: OpenAI-compatible providers send a native mask to `/v1/images/edits`; Gemini providers use the mask as an additional guide image with explicit edit instructions.
 
 Gemini generation requests ask for image-only responses with `responseModalities: ["IMAGE"]`. Provider health checks still use a text-only request so they can verify host, key, model, and endpoint readiness without triggering image generation.
 
@@ -138,7 +139,7 @@ Generation requests use adaptive provider timeouts: fast draft requests allow 12
 PICGEN_PROVIDER_TIMEOUT_MS=450000 picgen create --yes --preset poster "一张产品发布会主视觉"
 ```
 
-Providers expose capabilities such as `text-to-image` and `reference-image`. Old configs that omit capabilities are upgraded in memory from the provider protocol: Gemini supports both text and reference-image generation, while OpenAI-compatible `/v1/images/generations` supports text-to-image only.
+Providers expose capabilities such as `text-to-image`, `reference-image`, `multi-reference-image`, `mask-guided-edit`, and `native-inpaint`. Old configs that omit older capabilities are upgraded from the provider protocol when PicGen loads config. OpenAI-compatible providers support text generation plus image edits through `/v1/images/edits`; Gemini supports references and mask-guided edits through `generateContent`.
 
 Generated image data and provider-only fields such as base64 image payloads and Gemini thought signatures are redacted from metadata. PicGen keeps the generated assets as local image files and keeps stdout compact for agent workflows.
 

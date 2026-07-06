@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { writeProviderImages } from "../assets/output.js";
 import { fetchWithProviderTimeout, resolveProviderTimeoutMs } from "./timeout.js";
 import { buildOpenAIProtocolUrl } from "./urls.js";
@@ -31,14 +32,14 @@ export class OpenAIImagesAdapter {
     }
 
     const response = await fetchWithProviderTimeout(
-      buildOpenAIImagesUrl(plan.provider.base_url),
+      buildOpenAIImagesUrl(plan.provider.base_url, plan),
       {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json"
         },
-        body: JSON.stringify(buildOpenAIImagesRequest(plan))
+        body: JSON.stringify(await buildOpenAIImagesRequest(plan))
       },
       resolveProviderTimeoutMs(plan)
     );
@@ -62,11 +63,24 @@ export class OpenAIImagesAdapter {
   }
 }
 
-export function buildOpenAIImagesRequest(plan: ResolvedGenerationPlan): Record<string, unknown> {
-  if (plan.referenceImages.length > 0) {
-    throw new Error(
-      "Reference images are not supported by the openai-images generation adapter yet. Use a Gemini provider for reference-image generation."
-    );
+export async function buildOpenAIImagesRequest(
+  plan: ResolvedGenerationPlan
+): Promise<Record<string, unknown>> {
+  if (plan.referenceImages.length > 0 || plan.maskImage) {
+    if (plan.referenceImages.length === 0) {
+      throw new Error("OpenAI image edits require at least one reference image when a mask is provided.");
+    }
+
+    return removeUndefined({
+      model: plan.model,
+      prompt: plan.prompt,
+      images: await Promise.all(plan.referenceImages.map(readImageReference)),
+      mask: plan.maskImage ? await readImageReference(plan.maskImage) : undefined,
+      n: plan.preset.n,
+      size: mapOpenAIImageSize(plan.preset.aspect_ratio, plan.preset.size),
+      quality: mapOpenAIImageQuality(plan.preset.quality),
+      output_format: plan.preset.output_format
+    });
   }
 
   return removeUndefined({
@@ -106,8 +120,21 @@ export function extractOpenAIImages(response: OpenAIImagesResponse): ProviderIma
   });
 }
 
-function buildOpenAIImagesUrl(baseUrl: string): string {
-  return buildOpenAIProtocolUrl(baseUrl, "images/generations");
+function buildOpenAIImagesUrl(baseUrl: string, plan: ResolvedGenerationPlan): string {
+  return buildOpenAIProtocolUrl(
+    baseUrl,
+    plan.referenceImages.length > 0 || plan.maskImage ? "images/edits" : "images/generations"
+  );
+}
+
+async function readImageReference(image: {
+  path: string;
+  mime_type: string;
+}): Promise<{ image_url: string }> {
+  const data = (await readFile(image.path)).toString("base64");
+  return {
+    image_url: `data:${image.mime_type};base64,${data}`
+  };
 }
 
 function mapOpenAIImageSize(aspectRatio: string, size: string): string | undefined {

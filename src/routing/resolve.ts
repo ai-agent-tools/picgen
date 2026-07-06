@@ -15,6 +15,7 @@ export interface ResolveOptions {
   model?: string;
   outputDirectory?: string;
   referenceImages?: ReferenceImage[];
+  maskImage?: ReferenceImage;
 }
 
 export function resolveGenerationPlan(
@@ -60,7 +61,8 @@ export function resolveGenerationPlan(
       preset,
       modeName,
       outputDirectory: options.outputDirectory ?? join(cwd(), "outputs", "picgen"),
-      referenceImages: options.referenceImages ?? []
+      referenceImages: options.referenceImages ?? [],
+      maskImage: options.maskImage
     };
   }
 
@@ -76,6 +78,7 @@ export function resolveGenerationPlan(
 }
 
 function requiredCapabilityForOptions(options: ResolveOptions): ProviderCapability {
+  if (options.maskImage) return "mask-guided-edit";
   return options.referenceImages && options.referenceImages.length > 0
     ? "reference-image"
     : "text-to-image";

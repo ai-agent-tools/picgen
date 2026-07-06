@@ -138,8 +138,8 @@ Provider image payloads and Gemini thought signatures are redacted from metadata
 
 ## Current Alpha Limits
 
-- OpenAI-compatible `/v1/images/generations` supports text-to-image only.
-- OpenAI reference images need a future `/v1/images/edits` adapter.
+- OpenAI-compatible providers use `/v1/images/generations` for text-to-image and `/v1/images/edits` for reference-image or mask edits.
+- Gemini providers support reference images and mask-guided edits through `generateContent`; mask edits are guidance-based, not native inpainting.
 - Gemini may return PNG even when a preset says jpeg or webp; PicGen does not transcode output formats yet.
 - API keys are read from environment variables or `.env`; keychain storage is not implemented.
 - Full Codex plugin packaging is not implemented yet. Use the bundled skill instructions or CLI directly.
@@ -155,9 +155,9 @@ Set the environment variable named in the error, or put it in `.env` in the curr
 
 Use only the host. Do not add `/v1`, `/v1beta`, or endpoint paths.
 
-`Provider "... " does not support reference-image`
+`Provider "... " does not support reference-image` or `mask-guided-edit`
 
-Use a Gemini provider or remove `--reference`.
+Use a provider that supports the requested image workflow, or remove `--reference` / `--mask`.
 
 `Provider check failed`
 

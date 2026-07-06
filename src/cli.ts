@@ -59,10 +59,11 @@ program
   .option("--out-dir <path>", "Output directory.")
   .option(
     "--reference <path>",
-    "Reference image path for Gemini generation. Can be repeated.",
+    "Reference image path for image-to-image generation. Can be repeated.",
     collectOption,
     []
   )
+  .option("--mask <path>", "Mask image path for local edits/inpainting.")
   .option("--json", "Print machine-readable JSON.")
   .option("-y, --yes", "Skip confirmation for real generation.")
   .action(runCreate);

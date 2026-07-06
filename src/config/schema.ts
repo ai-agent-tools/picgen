@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ProviderCapability } from "../types.js";
+import { defaultCapabilitiesForProtocol } from "./capabilities.js";
 
 const providerSchema = z.object({
   enabled: z.boolean().default(true),
@@ -10,7 +10,15 @@ const providerSchema = z.object({
   models: z.array(z.string().min(1)).min(1),
   test_model: z.string().min(1).optional(),
   capabilities: z
-    .array(z.enum(["text-to-image", "reference-image"]))
+    .array(
+      z.enum([
+        "text-to-image",
+        "reference-image",
+        "multi-reference-image",
+        "mask-guided-edit",
+        "native-inpaint"
+      ])
+    )
     .optional()
 })
 .transform((provider) => ({
@@ -66,11 +74,3 @@ export const picgenConfigSchema = z.object({
   ),
   presets: z.record(presetSchema)
 });
-
-function defaultCapabilitiesForProtocol(protocol: "openai-images" | "gemini"): ProviderCapability[] {
-  if (protocol === "gemini") {
-    return ["text-to-image", "reference-image"];
-  }
-
-  return ["text-to-image"];
-}

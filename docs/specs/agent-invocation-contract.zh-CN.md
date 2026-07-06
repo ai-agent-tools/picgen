@@ -32,7 +32,7 @@ PicGen CLI 负责执行和资产管理：
 
 - 读取配置和用户偏好。
 - 解析 preset、mode、provider、model。
-- 根据请求匹配 provider capability，例如 `text-to-image` 和 `reference-image`。
+- 根据请求匹配 provider capability，例如 `text-to-image`、`reference-image`、`mask-guided-edit` 和 `native-inpaint`。
 - 生成 dry-run plan。
 - 调用 provider。
 - 下载、解码并保存图片到本地。
@@ -182,8 +182,11 @@ provider 应声明能力 capability，至少包括：
 
 - `text-to-image`：支持根据文本 prompt 生图。
 - `reference-image`：支持使用一张或多张本地图片作为生成参考。
+- `multi-reference-image`：支持在一次请求里使用多张本地参考图。
+- `mask-guided-edit`：支持使用源图和遮罩图引导局部编辑。
+- `native-inpaint`：支持 provider 原生 mask/inpainting 参数，而不是只靠提示词引导。
 
-如果老配置没有写 capabilities，PicGen 应根据协议推断默认值。Gemini 默认支持 `text-to-image` 和 `reference-image`；OpenAI-compatible `/v1/images/generations` 默认只支持 `text-to-image`。
+如果老配置没有写 capabilities，PicGen 应根据协议推断默认值。Gemini 默认支持 `text-to-image`、`reference-image`、`multi-reference-image` 和 `mask-guided-edit`；OpenAI-compatible 默认支持 `text-to-image`、`reference-image`、`multi-reference-image`、`mask-guided-edit` 和 `native-inpaint`。
 
 路由时应跳过不支持当前请求能力的 provider。如果用户显式指定了不支持的 provider，PicGen 应给出清晰错误，不要静默忽略用户传入的参考图。
 
@@ -202,7 +205,7 @@ picgen create --provider gemini_official --reference ./reference.png --preset po
 
 dry-run 输出只应包含参考图路径、MIME 类型和文件大小，不应输出或展示图片 base64。
 
-Alpha 阶段参考图能力由 Gemini adapter 支持。如果当前选择的是 OpenAI-compatible `/v1/images/generations` adapter，Agent 应为本次调用切换到 Gemini provider，或说明 OpenAI-compatible 参考图能力尚未实现。不要静默忽略用户传入的参考图。
+Alpha 阶段 Gemini 和 OpenAI-compatible provider 都支持参考图。OpenAI-compatible provider 在传入 `--reference` 或 `--mask` 时应走 `/v1/images/edits`；Gemini provider 继续走 `generateContent`，其中 mask 是提示词引导的遮罩参考图，不等同于原生 inpainting。
 
 ## 图片资产协议
 

@@ -15,6 +15,7 @@ export interface CreateOptions {
   model?: string;
   outDir?: string;
   reference?: string[];
+  mask?: string;
   json?: boolean;
   yes?: boolean;
 }
@@ -38,6 +39,11 @@ export interface GenerationPlanOutput {
     mime_type: string;
     bytes: number;
   }>;
+  mask_image?: {
+    path: string;
+    mime_type: string;
+    bytes: number;
+  };
 }
 
 export async function runCreate(promptParts: string[], options: CreateOptions): Promise<void> {
@@ -48,6 +54,10 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
 
   const config = await loadConfig();
   const referenceImages = await resolveReferenceImages(options.reference ?? []);
+  const [maskImage] = await resolveReferenceImages(options.mask ? [options.mask] : []);
+  if (maskImage && referenceImages.length === 0) {
+    throw new Error("--mask requires at least one --reference image.");
+  }
   const plan = resolveGenerationPlan(config, {
     prompt,
     presetName: options.preset,
@@ -55,7 +65,8 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
     modeName: options.mode,
     model: options.model,
     outputDirectory: options.outDir,
-    referenceImages
+    referenceImages,
+    maskImage
   });
 
   const planOutput = toPlanOutput(plan);
@@ -181,6 +192,13 @@ export function toPlanOutput(plan: ResolvedGenerationPlan): GenerationPlanOutput
       path: image.path,
       mime_type: image.mime_type,
       bytes: image.bytes
-    }))
+    })),
+    mask_image: plan.maskImage
+      ? {
+          path: plan.maskImage.path,
+          mime_type: plan.maskImage.mime_type,
+          bytes: plan.maskImage.bytes
+        }
+      : undefined
   };
 }

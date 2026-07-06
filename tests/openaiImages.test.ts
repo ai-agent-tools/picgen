@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -38,8 +38,8 @@ afterEach(async () => {
 });
 
 describe("OpenAI images adapter", () => {
-  it("builds an OpenAI-compatible image generation request", () => {
-    expect(buildOpenAIImagesRequest(plan)).toEqual({
+  it("builds an OpenAI-compatible image generation request", async () => {
+    await expect(buildOpenAIImagesRequest(plan)).resolves.toEqual({
       model: "gpt-image-2",
       prompt: "test prompt",
       n: 2,
@@ -50,21 +50,43 @@ describe("OpenAI images adapter", () => {
     });
   });
 
-  it("rejects reference images until the edit adapter is implemented", () => {
+  it("builds an OpenAI-compatible image edit request with references and mask", async () => {
+    const referencePath = join(tempDir, "reference.png");
+    const maskPath = join(tempDir, "mask.png");
+    await writeFile(referencePath, "reference image");
+    await writeFile(maskPath, "mask image");
     const planWithReference = {
       ...plan,
       referenceImages: [
         {
-          path: "/tmp/reference.png",
+          path: referencePath,
           mime_type: "image/png",
           bytes: 123
         }
-      ]
+      ],
+      maskImage: {
+        path: maskPath,
+        mime_type: "image/png",
+        bytes: 456
+      }
     };
 
-    expect(() => buildOpenAIImagesRequest(planWithReference)).toThrow(
-      "Reference images are not supported by the openai-images generation adapter yet."
-    );
+    await expect(buildOpenAIImagesRequest(planWithReference)).resolves.toEqual({
+      model: "gpt-image-2",
+      prompt: "test prompt",
+      images: [
+        {
+          image_url: `data:image/png;base64,${Buffer.from("reference image").toString("base64")}`
+        }
+      ],
+      mask: {
+        image_url: `data:image/png;base64,${Buffer.from("mask image").toString("base64")}`
+      },
+      n: 2,
+      size: "1024x1536",
+      quality: "high",
+      output_format: "png"
+    });
   });
 
   it("extracts b64 and URL image outputs", () => {
@@ -128,6 +150,43 @@ describe("OpenAI images adapter", () => {
       })
     );
     await expect(readFile(result.images[0].path, "utf8")).resolves.toBe("fake image");
+  });
+
+  it("calls the edits endpoint when reference images are provided", async () => {
+    const referencePath = join(tempDir, "reference.png");
+    await writeFile(referencePath, "reference image");
+    const planWithReference = {
+      ...plan,
+      referenceImages: [
+        {
+          path: referencePath,
+          mime_type: "image/png",
+          bytes: 15
+        }
+      ]
+    };
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          data: [{ b64_json: Buffer.from("edited image").toString("base64") }]
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      )
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const run = await createGenerationRun(planWithReference, new Date("2026-07-02T10:11:12"));
+    await new OpenAIImagesAdapter().generate(planWithReference, run);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.openai.com/v1/images/edits",
+      expect.objectContaining({
+        method: "POST"
+      })
+    );
   });
 
   it("surfaces provider error messages", async () => {

@@ -1,10 +1,13 @@
 import { input, select } from "@inquirer/prompts";
+import { defaultCapabilitiesForProtocol } from "../config/capabilities.js";
 import { nextAvailableProviderApiKeyEnv } from "../config/providerKeys.js";
 import { setPreferredProvider } from "../config/preferences.js";
 import { loadConfig, saveConfig } from "../config/store.js";
 import { testProvider } from "../providers/health.js";
 import { defaultProviderBaseUrl, normalizeProviderBaseUrl } from "../providers/urls.js";
 import type { Channel, PicgenConfig, Protocol, ProviderConfig } from "../types.js";
+
+export { defaultCapabilitiesForProtocol } from "../config/capabilities.js";
 
 export async function listProviders(): Promise<void> {
   const config = await loadConfig();
@@ -248,12 +251,6 @@ export function nextAvailableProviderName(
   let index = 2;
   while (config.providers[`${baseName}_${index}`]) index += 1;
   return `${baseName}_${index}`;
-}
-
-export function defaultCapabilitiesForProtocol(protocol: Protocol): ProviderConfig["capabilities"] {
-  return protocol === "gemini"
-    ? ["text-to-image", "reference-image"]
-    : ["text-to-image"];
 }
 
 function quickProviderTemplate(templateName: string): {

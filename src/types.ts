@@ -2,7 +2,12 @@ export type Protocol = "openai-images" | "gemini";
 export type Channel = "official" | "third_party";
 export type ModeName = "fast" | "balanced" | "premium" | string;
 export type OutputFormat = "png" | "jpeg" | "webp";
-export type ProviderCapability = "text-to-image" | "reference-image";
+export type ProviderCapability =
+  | "text-to-image"
+  | "reference-image"
+  | "multi-reference-image"
+  | "mask-guided-edit"
+  | "native-inpaint";
 
 export interface ProviderConfig {
   enabled: boolean;
@@ -58,6 +63,7 @@ export interface ResolvedGenerationPlan {
   modeName: string;
   outputDirectory: string;
   referenceImages: ReferenceImage[];
+  maskImage?: ReferenceImage;
 }
 
 export interface GenerationRun {

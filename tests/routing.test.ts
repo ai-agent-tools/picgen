@@ -65,14 +65,22 @@ describe("resolveGenerationPlan", () => {
 
     expect(parsed.routing.default_provider).toBe("gemini_official");
     expect(parsed.routing.fallback_providers).toEqual(["openai_official"]);
-    expect(parsed.providers.openai_official.capabilities).toEqual(["text-to-image"]);
+    expect(parsed.providers.openai_official.capabilities).toEqual([
+      "text-to-image",
+      "reference-image",
+      "multi-reference-image",
+      "mask-guided-edit",
+      "native-inpaint"
+    ]);
     expect(parsed.providers.gemini_official.capabilities).toEqual([
       "text-to-image",
-      "reference-image"
+      "reference-image",
+      "multi-reference-image",
+      "mask-guided-edit"
     ]);
   });
 
-  it("routes reference-image requests to a capable fallback provider", () => {
+  it("routes reference-image requests to a capable default provider", () => {
     const plan = resolveGenerationPlan(defaultConfig, {
       prompt: "test",
       presetName: "poster",
@@ -85,13 +93,39 @@ describe("resolveGenerationPlan", () => {
       ]
     });
 
-    expect(plan.providerName).toBe("gemini_official");
+    expect(plan.providerName).toBe("openai_official");
     expect(plan.provider.capabilities).toContain("reference-image");
   });
 
-  it("rejects explicit providers that do not support reference images", () => {
+  it("routes mask edits to providers with mask-guided edit support", () => {
+    const plan = resolveGenerationPlan(defaultConfig, {
+      prompt: "test",
+      presetName: "poster",
+      referenceImages: [
+        {
+          path: "/tmp/reference.png",
+          mime_type: "image/png",
+          bytes: 123
+        }
+      ],
+      maskImage: {
+        path: "/tmp/mask.png",
+        mime_type: "image/png",
+        bytes: 456
+      }
+    });
+
+    expect(plan.providerName).toBe("openai_official");
+    expect(plan.provider.capabilities).toContain("mask-guided-edit");
+    expect(plan.provider.capabilities).toContain("native-inpaint");
+  });
+
+  it("rejects explicit providers that do not support mask-guided edits", () => {
+    const config = structuredClone(defaultConfig);
+    config.providers.openai_official.capabilities = ["text-to-image"];
+
     expect(() =>
-      resolveGenerationPlan(defaultConfig, {
+      resolveGenerationPlan(config, {
         prompt: "test",
         providerName: "openai_official",
         referenceImages: [
@@ -100,9 +134,14 @@ describe("resolveGenerationPlan", () => {
             mime_type: "image/png",
             bytes: 123
           }
-        ]
+        ],
+        maskImage: {
+          path: "/tmp/mask.png",
+          mime_type: "image/png",
+          bytes: 456
+        }
       })
-    ).toThrow('Provider "openai_official" does not support reference-image.');
+    ).toThrow('Provider "openai_official" does not support mask-guided-edit.');
   });
 
   it("builds an agent-friendly plan output", () => {

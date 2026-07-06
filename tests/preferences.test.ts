@@ -125,10 +125,18 @@ describe("preference commands", () => {
   });
 
   it("uses protocol defaults for provider capabilities", () => {
-    expect(defaultCapabilitiesForProtocol("openai-images")).toEqual(["text-to-image"]);
+    expect(defaultCapabilitiesForProtocol("openai-images")).toEqual([
+      "text-to-image",
+      "reference-image",
+      "multi-reference-image",
+      "mask-guided-edit",
+      "native-inpaint"
+    ]);
     expect(defaultCapabilitiesForProtocol("gemini")).toEqual([
       "text-to-image",
-      "reference-image"
+      "reference-image",
+      "multi-reference-image",
+      "mask-guided-edit"
     ]);
   });
 
@@ -149,7 +157,7 @@ describe("preference commands", () => {
         channel: "third_party",
         base_url: "https://www.pandai.vip",
         api_key_env: "PICGEN_GEMINI_PROXY_KEY",
-        capabilities: ["text-to-image", "reference-image"]
+        capabilities: ["text-to-image", "reference-image", "multi-reference-image", "mask-guided-edit"]
       })
     );
   });

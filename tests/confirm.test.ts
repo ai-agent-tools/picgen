@@ -16,7 +16,8 @@ const plan: GenerationPlanOutput = {
   n: 2,
   output_format: "png",
   output_directory: "/tmp/picgen",
-  reference_images: []
+  reference_images: [],
+  mask_image: undefined
 };
 
 describe("generation confirmation", () => {
@@ -25,6 +26,7 @@ describe("generation confirmation", () => {
     expect(formatGenerationPreview(plan)).toContain("Model: gpt-image-2");
     expect(formatGenerationPreview(plan)).toContain("Images: 2");
     expect(formatGenerationPreview(plan)).toContain("Reference images: 0");
+    expect(formatGenerationPreview(plan)).toContain("Mask image: no");
     expect(formatGenerationPreview(plan)).toContain("Output: /tmp/picgen");
   });
 

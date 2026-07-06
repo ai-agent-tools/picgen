@@ -143,11 +143,18 @@ When explaining key inspection to users, say: "In this conversation I only read 
 For reference-image generation, pass local images with repeated `--reference <path>` flags:
 
 ```bash
-picgen create --dry-run --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
-picgen create --provider gemini_official --reference ./reference.png --preset poster "<prompt>"
+picgen create --dry-run --reference ./reference.png --preset poster "<prompt>"
+picgen create --reference ./reference.png --preset poster "<prompt>"
 ```
 
-Use Gemini providers for reference-image generation in Alpha. The OpenAI-compatible `/v1/images/generations` adapter does not support reference images yet.
+For local edits or inpainting, pass a mask image together with at least one reference image:
+
+```bash
+picgen create --dry-run --reference ./source.png --mask ./mask.png --preset poster "<prompt>"
+picgen create --reference ./source.png --mask ./mask.png --preset poster "<prompt>"
+```
+
+OpenAI-compatible providers use `/v1/images/edits` when reference images or masks are provided. Gemini providers use `generateContent`; masks are treated as mask-guidance images with explicit edit instructions rather than native inpainting.
 
 PicGen routes by provider capabilities. When reference images are provided, agents may omit `--provider` and let PicGen select a provider that supports `reference-image`, unless the user explicitly requested a provider.
 
@@ -191,6 +198,7 @@ picgen create --model gemini-3-pro-image-preview "<prompt>"
 picgen create --preset poster "<prompt>"
 picgen create --mode premium "<prompt>"
 picgen create --reference ./reference.png "<prompt>"
+picgen create --mask ./mask.png --reference ./source.png "<prompt>"
 ```
 
 Only change defaults when the user explicitly asks to remember a preference, such as "use Gemini by default from now on".
@@ -220,7 +228,7 @@ If an API key is missing, save it with `picgen key set <ENV_NAME> --clipboard`, 
 
 If a provider is disabled, suggest enabling it or using a one-off provider override.
 
-If the user provides reference images with an OpenAI-compatible provider, switch to a Gemini provider for this run or explain that OpenAI-compatible reference-image support is not implemented yet.
+If the user provides a mask without a reference image, ask for or locate the source/reference image before generating. Masks only make sense together with a source image.
 
 If a provider call fails, show a short error and point to the metadata or error path if available. Do not silently retry with another paid provider unless the user has approved fallback behavior.
 

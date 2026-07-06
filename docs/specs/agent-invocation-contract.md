@@ -24,7 +24,7 @@ The PicGen CLI is responsible for:
 
 - Loading user preferences and config.
 - Resolving provider, model, mode, preset, and output settings.
-- Matching the request to provider capabilities such as `text-to-image` and `reference-image`.
+- Matching the request to provider capabilities such as `text-to-image`, `reference-image`, `mask-guided-edit`, and `native-inpaint`.
 - Producing dry-run plans without calling providers.
 - Calling providers for real generation.
 - Downloading, decoding, and saving generated images as local files.
@@ -134,8 +134,11 @@ Providers should expose capabilities. At minimum:
 
 - `text-to-image`: can generate from a text prompt.
 - `reference-image`: can use one or more local images as generation references.
+- `multi-reference-image`: can use multiple local reference images in one request.
+- `mask-guided-edit`: can use a source image and mask image to guide a local edit.
+- `native-inpaint`: supports provider-native mask/inpainting parameters rather than prompt-only mask guidance.
 
-If capabilities are omitted from older configs, PicGen should infer defaults from the protocol. Gemini supports both `text-to-image` and `reference-image`; OpenAI-compatible `/v1/images/generations` supports `text-to-image` only.
+If capabilities are omitted from older configs, PicGen should infer defaults from the protocol. Gemini supports `text-to-image`, `reference-image`, `multi-reference-image`, and `mask-guided-edit`. OpenAI-compatible providers support `text-to-image`, `reference-image`, `multi-reference-image`, `mask-guided-edit`, and `native-inpaint`.
 
 Routing should skip providers that do not support the capability required by the request. If the user explicitly selects an unsupported provider, PicGen should fail clearly instead of silently ignoring the unsupported input.
 
@@ -154,7 +157,7 @@ picgen create --provider gemini_official --reference ./reference.png --preset po
 
 Dry-run output should include only reference image paths, MIME types, and byte sizes. It must not print or expose image base64.
 
-Alpha supports reference images through the Gemini adapter. If the selected provider uses the OpenAI-compatible `/v1/images/generations` adapter, agents should switch to a Gemini provider for that run or explain that OpenAI-compatible reference-image support is not implemented yet.
+Alpha supports reference images through both Gemini and OpenAI-compatible providers. OpenAI-compatible providers should use `/v1/images/edits` when `--reference` or `--mask` is present. Gemini providers should use `generateContent`; masks are treated as guidance images rather than native inpainting.
 
 ## Output Asset Contract
 

@@ -88,7 +88,7 @@ export function buildGeminiGenerateContentRequest(
         role: "user",
         parts: [
           {
-            text: plan.prompt
+            text: buildGeminiPrompt(plan)
           },
           ...referenceParts
         ]
@@ -105,14 +105,26 @@ export function buildGeminiGenerateContentRequest(
 }
 
 async function readReferenceImageParts(plan: ResolvedGenerationPlan): Promise<Array<Record<string, unknown>>> {
+  const images = plan.maskImage ? [...plan.referenceImages, plan.maskImage] : plan.referenceImages;
   return Promise.all(
-    plan.referenceImages.map(async (image) => ({
+    images.map(async (image) => ({
       inlineData: {
         mimeType: image.mime_type,
         data: (await readFile(image.path)).toString("base64")
       }
     }))
   );
+}
+
+function buildGeminiPrompt(plan: ResolvedGenerationPlan): string {
+  if (!plan.maskImage) return plan.prompt;
+  return [
+    "Use the provided images for a mask-guided edit.",
+    "The first image(s) are source/reference images. The final image is the mask.",
+    "Only modify the area indicated by the mask as much as possible, and preserve the rest of the source image.",
+    "",
+    plan.prompt
+  ].join("\n");
 }
 
 export function extractGeminiImages(

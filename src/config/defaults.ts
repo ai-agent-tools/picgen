@@ -15,7 +15,13 @@ export const defaultConfig: PicgenConfig = {
       base_url: "https://api.openai.com",
       api_key_env: "OPENAI_API_KEY",
       models: ["gpt-image-2"],
-      capabilities: ["text-to-image"]
+      capabilities: [
+        "text-to-image",
+        "reference-image",
+        "multi-reference-image",
+        "mask-guided-edit",
+        "native-inpaint"
+      ]
     },
     gemini_official: {
       enabled: true,
@@ -24,7 +30,7 @@ export const defaultConfig: PicgenConfig = {
       base_url: "https://generativelanguage.googleapis.com",
       api_key_env: "GEMINI_API_KEY",
       models: ["gemini-3.1-flash-image-preview", "gemini-3-pro-image-preview"],
-      capabilities: ["text-to-image", "reference-image"]
+      capabilities: ["text-to-image", "reference-image", "multi-reference-image", "mask-guided-edit"]
     }
   },
   modes: {

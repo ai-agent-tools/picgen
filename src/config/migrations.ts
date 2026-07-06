@@ -1,3 +1,4 @@
+import { defaultCapabilitiesForProtocol } from "./capabilities.js";
 import { readEnvVarValue, saveManagedEnvVar } from "./env.js";
 import { providerNameToApiKeyEnv } from "./providerKeys.js";
 import type { PicgenConfig } from "../types.js";
@@ -13,6 +14,13 @@ export async function migrateConfig(config: PicgenConfig): Promise<ConfigMigrati
   const usedEnvs = new Set<string>();
 
   for (const [providerName, provider] of Object.entries(migrated.providers)) {
+    const defaultCapabilities = defaultCapabilitiesForProtocol(provider.protocol);
+    const mergedCapabilities = [...new Set([...provider.capabilities, ...defaultCapabilities])];
+    if (mergedCapabilities.length !== provider.capabilities.length) {
+      provider.capabilities = mergedCapabilities;
+      changed = true;
+    }
+
     const currentEnv = provider.api_key_env;
     if (!usedEnvs.has(currentEnv)) {
       usedEnvs.add(currentEnv);
