@@ -39,6 +39,43 @@ picgen skill install codex --force
 
 After installing or updating a skill, the user may need to restart the agent or open a new session before the skill is visible.
 
+## Upgrade
+
+When the user asks to upgrade PicGen, update both the CLI and this skill. Do not ask non-technical users to understand npm, skill caches, or version details.
+
+First check that Node.js and npm are available:
+
+```bash
+node -v
+npm -v
+```
+
+If Node.js or npm is missing, guide the user to install Node.js LTS first.
+
+Upgrade the CLI:
+
+```bash
+npm install -g @ai-agent-tools/picgen@latest
+picgen --version
+picgen doctor --json
+```
+
+Then update the skill:
+
+```bash
+npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
+```
+
+If the Skills installer is unavailable and the current agent is Codex, use:
+
+```bash
+picgen skill install codex --force
+```
+
+After updating the skill, tell the user to open a new conversation so the agent can reload the latest PicGen instructions. If the new conversation still does not recognize the updated skill, ask the user to restart the agent app.
+
+Keep existing provider and API key configuration. Upgrades should not require users to reconfigure keys unless `picgen doctor --json` reports a real configuration problem.
+
 ## Environment Check
 
 Before installing the CLI, installing skills, or saving API keys, check whether the current terminal is the user's persistent local environment or a sandbox/temporary environment.

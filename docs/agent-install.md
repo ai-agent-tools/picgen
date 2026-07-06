@@ -68,7 +68,48 @@ picgen skill install codex --force
 
 如果安装后 Agent 暂时看不到 skill，请提醒用户重启 Agent 或新开一个会话。
 
-## 3.1 打开本地网页
+## 3.1 升级 CLI 和 Skill
+
+当用户说“升级 PicGen”、“更新 PicGen”或“帮我用最新版”时，请同时升级 CLI 和 skill。不要让非技术用户理解 npm、skill 缓存、版本号等细节。
+
+先确认 Node.js 和 npm 可用：
+
+```bash
+node -v
+npm -v
+```
+
+如果不可用，请先指导用户安装 Node.js LTS。
+
+升级 CLI：
+
+```bash
+npm install -g @ai-agent-tools/picgen@latest
+picgen --version
+picgen doctor --json
+```
+
+更新 skill：
+
+```bash
+npx -y skills add ai-agent-tools/picgen --skill picgen -g -y --copy
+```
+
+如果 `skills` 安装器不可用，且当前是 Codex，可以使用：
+
+```bash
+picgen skill install codex --force
+```
+
+升级时不要要求用户重新配置 provider 或 API key。只有 `picgen doctor --json` 明确显示配置异常时，才进入配置修复流程。
+
+升级完成后，请告诉用户：
+
+```text
+PicGen 已升级。为了让 Agent 读取最新 skill，请新开一个对话继续使用；如果新对话仍未生效，再重启 Agent 软件。
+```
+
+## 3.2 打开本地网页
 
 如果用户说“打开 PicGen”、“打开生图工具”、“我想用网页配置/生图/找回图片”，请启动本地网页：
 
