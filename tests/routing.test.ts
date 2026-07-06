@@ -159,7 +159,7 @@ describe("resolveGenerationPlan", () => {
       preset: "poster",
       mode: "premium",
       aspect_ratio: "3:4",
-      n: 2
+      n: 1
     });
   });
 });

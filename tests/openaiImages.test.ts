@@ -44,7 +44,7 @@ describe("OpenAI images adapter", () => {
     expect(buildOpenAIImagesRequest(plan)).toEqual({
       model: "gpt-image-2",
       prompt: "test prompt",
-      n: 2,
+      n: 1,
       size: "1024x1536",
       quality: "high",
       output_format: "png",
@@ -76,7 +76,7 @@ describe("OpenAI images adapter", () => {
     const form = await buildOpenAIImagesEditFormData(planWithReference);
     expect(form.get("model")).toBe("gpt-image-2");
     expect(form.get("prompt")).toBe("test prompt");
-    expect(form.get("n")).toBe("2");
+    expect(form.get("n")).toBe("1");
     expect(form.get("size")).toBe("1024x1536");
     expect(form.get("quality")).toBe("high");
     expect(form.get("output_format")).toBe("png");

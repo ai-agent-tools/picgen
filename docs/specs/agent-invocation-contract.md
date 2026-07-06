@@ -83,6 +83,8 @@ The preview should summarize:
 - Aspect ratio.
 - Local output behavior.
 
+Default to 1 generated image. Agents must not increase the image count just to provide options. Use multiple images only when the user explicitly requests multiple options, variations, comparisons, or a specific count.
+
 If the user explicitly says "generate directly", "do not ask", or equivalent, the agent may skip the user-facing confirmation step. The agent should still construct a plan internally.
 
 ## Preferences and One-off Overrides

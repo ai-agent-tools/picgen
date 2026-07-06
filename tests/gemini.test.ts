@@ -127,14 +127,21 @@ describe("Gemini generateContent adapter", () => {
   });
 
   it("calls generateContent once per requested image and writes files locally", async () => {
+    const twoImagePlan = {
+      ...plan,
+      preset: {
+        ...plan.preset,
+        n: 2
+      }
+    };
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(geminiResponse("first image", "image/png"))
       .mockResolvedValueOnce(geminiResponse("second image", "image/png"));
     vi.stubGlobal("fetch", fetchMock);
 
-    const run = await createGenerationRun(plan, new Date("2026-07-02T10:11:12"));
-    const result = await new GeminiAdapter().generate(plan, run);
+    const run = await createGenerationRun(twoImagePlan, new Date("2026-07-02T10:11:12"));
+    const result = await new GeminiAdapter().generate(twoImagePlan, run);
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock).toHaveBeenCalledWith(

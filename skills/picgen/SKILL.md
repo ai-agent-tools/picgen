@@ -169,6 +169,8 @@ For first-time agent-assisted setup, prefer the clipboard-based CLI flow because
 
 If the user explicitly says to generate directly or not ask for confirmation, you may skip the user-facing confirmation step. Still form a generation plan internally.
 
+Default to one generated image. Do not generate multiple images merely to offer options. Generate multiple images only when the user explicitly asks for multiple options, variations, comparisons, or a specific count.
+
 ## Provider Setup
 
 When terminal prompts are visible to the user, `picgen setup` is acceptable.
@@ -230,7 +232,7 @@ PicGen routes by provider capabilities. When reference images are provided, agen
 
 ## First Smoke Test
 
-After configuring a provider, run the first test generation with a low-cost, fast, one-image plan. Do not use `poster`, `product-shot`, `social-cover`, premium modes, large sizes, or multi-image presets for initial verification.
+After configuring a provider, run the first test generation with a low-cost, fast, one-image plan. Do not use `poster`, `product-shot`, `social-cover`, premium modes, large sizes, or high-quality presets for initial verification.
 
 For Gemini providers, prefer the flash image model for the first test:
 

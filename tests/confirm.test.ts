@@ -13,7 +13,7 @@ const plan: GenerationPlanOutput = {
   aspect_ratio: "3:4",
   size: "large",
   quality: "high",
-  n: 2,
+  n: 1,
   output_format: "png",
   output_directory: "/tmp/picgen",
   reference_images: [],
@@ -24,7 +24,7 @@ describe("generation confirmation", () => {
   it("formats a compact generation preview", () => {
     expect(formatGenerationPreview(plan)).toContain("Provider: openai_official (openai-images)");
     expect(formatGenerationPreview(plan)).toContain("Model: gpt-image-2");
-    expect(formatGenerationPreview(plan)).toContain("Images: 2");
+    expect(formatGenerationPreview(plan)).toContain("Images: 1");
     expect(formatGenerationPreview(plan)).toContain("Reference images: 0");
     expect(formatGenerationPreview(plan)).toContain("Mask image: no");
     expect(formatGenerationPreview(plan)).toContain("Output: /tmp/picgen");

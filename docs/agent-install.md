@@ -200,7 +200,7 @@ picgen provider test openai_proxy --json
 
 ## 5. 首次轻量测试
 
-首次测试只验证工具和渠道是否可用，应低成本、快速、只生成 1 张。不要用 `poster`、`product-shot`、`social-cover`，不要用 premium / large / high 多图方案。
+首次测试只验证工具和渠道是否可用，应低成本、快速、只生成 1 张。不要用 `poster`、`product-shot`、`social-cover`，不要用 premium / large / high 高质量方案。
 
 Gemini provider 首次测试优先用 flash image model：
 

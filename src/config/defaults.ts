@@ -58,7 +58,7 @@ export const defaultConfig: PicgenConfig = {
       aspect_ratio: "3:4",
       size: "large",
       quality: "high",
-      n: 2,
+      n: 1,
       output_format: "png"
     },
     "social-cover": {
@@ -66,7 +66,7 @@ export const defaultConfig: PicgenConfig = {
       aspect_ratio: "16:9",
       size: "large",
       quality: "high",
-      n: 2,
+      n: 1,
       output_format: "png"
     },
     "product-shot": {
@@ -74,7 +74,7 @@ export const defaultConfig: PicgenConfig = {
       aspect_ratio: "1:1",
       size: "large",
       quality: "high",
-      n: 2,
+      n: 1,
       output_format: "png"
     },
     "fast-draft": {
