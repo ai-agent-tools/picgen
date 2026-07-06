@@ -3,6 +3,14 @@
   "version": "0.1.0-alpha.15",
   "description": "A lightweight image generation connector for AI agents.",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-agent-tools/picgen.git"
+  },
+  "homepage": "https://github.com/ai-agent-tools/picgen#readme",
+  "bugs": {
+    "url": "https://github.com/ai-agent-tools/picgen/issues"
+  },
   "bin": {
     "picgen": "dist/cli.js"
   },
