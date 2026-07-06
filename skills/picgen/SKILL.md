@@ -76,6 +76,39 @@ After updating the skill, tell the user to open a new conversation so the agent 
 
 Keep existing provider and API key configuration. Upgrades should not require users to reconfigure keys unless `picgen doctor --json` reports a real configuration problem.
 
+## Update Awareness
+
+PicGen includes an update checker:
+
+```bash
+picgen update check --json
+```
+
+Check for updates in these moments:
+
+- The user asks to install, upgrade, configure, diagnose, or open PicGen.
+- The user asks about a newer capability, such as reference images, masks, local web UI, provider management, or history.
+- A PicGen command fails because an option, command, protocol feature, or skill instruction appears unavailable.
+- `picgen doctor --json` or `picgen quickstart` already reports an update hint.
+
+Do not check before every generation request. Avoid interrupting a successful image-generation flow just to suggest an update.
+
+When an update is available, explain the benefit in user terms before giving commands. Prefer capability-led wording:
+
+```text
+PicGen 有新版可用。升级后通常可以直接保留现有渠道和 API key，同时获得新版能力，例如参考图、遮罩编辑、本地网页配置/历史查看，以及更好的 Agent 使用说明。要我帮你现在升级吗？
+```
+
+If the user is in the middle of an urgent generation task, keep the suggestion lightweight:
+
+```text
+当前版本也可以继续用。我看到 PicGen 有新版，完成这次生成后可以升级，能获得更多生图和配置能力。
+```
+
+After the user agrees, follow the Upgrade workflow above. If they decline, continue the current task without repeating the reminder in the same conversation unless a missing capability blocks progress.
+
+When update information is unavailable because the npm registry cannot be reached, do not treat it as an error. Continue the requested task and mention only if the user explicitly asked to check updates.
+
 ## Environment Check
 
 Before installing the CLI, installing skills, or saving API keys, check whether the current terminal is the user's persistent local environment or a sandbox/temporary environment.
