@@ -224,7 +224,7 @@ picgen create --dry-run --reference ./source.png --mask ./mask.png --preset post
 picgen create --reference ./source.png --mask ./mask.png --preset poster "<prompt>"
 ```
 
-OpenAI-compatible providers use `/v1/images/edits` when reference images or masks are provided. Gemini providers use `generateContent`; masks are treated as mask-guidance images with explicit edit instructions rather than native inpainting.
+OpenAI-compatible providers use `/v1/images/edits` with multipart `image[]` uploads when reference images are provided, and multipart `mask` uploads when masks are provided. Gemini providers use `generateContent`; masks are treated as mask-guidance images with explicit edit instructions rather than native inpainting.
 
 PicGen routes by provider capabilities. When reference images are provided, agents may omit `--provider` and let PicGen select a provider that supports `reference-image`, unless the user explicitly requested a provider.
 

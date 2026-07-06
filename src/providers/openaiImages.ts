@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { basename } from "node:path";
 import { writeProviderImages } from "../assets/output.js";
 import { fetchWithProviderTimeout, resolveProviderTimeoutMs } from "./timeout.js";
 import { buildOpenAIProtocolUrl } from "./urls.js";
@@ -33,14 +34,7 @@ export class OpenAIImagesAdapter {
 
     const response = await fetchWithProviderTimeout(
       buildOpenAIImagesUrl(plan.provider.base_url, plan),
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(await buildOpenAIImagesRequest(plan))
-      },
+      await buildOpenAIImagesFetchInit(plan, apiKey),
       resolveProviderTimeoutMs(plan)
     );
 
@@ -63,24 +57,35 @@ export class OpenAIImagesAdapter {
   }
 }
 
-export async function buildOpenAIImagesRequest(
-  plan: ResolvedGenerationPlan
-): Promise<Record<string, unknown>> {
-  if (plan.referenceImages.length > 0 || plan.maskImage) {
-    if (plan.referenceImages.length === 0) {
-      throw new Error("OpenAI image edits require at least one reference image when a mask is provided.");
-    }
+export async function buildOpenAIImagesFetchInit(
+  plan: ResolvedGenerationPlan,
+  apiKey: string
+): Promise<RequestInit> {
+  const authorization = { Authorization: `Bearer ${apiKey}` };
 
-    return removeUndefined({
-      model: plan.model,
-      prompt: plan.prompt,
-      images: await Promise.all(plan.referenceImages.map(readImageReference)),
-      mask: plan.maskImage ? await readImageReference(plan.maskImage) : undefined,
-      n: plan.preset.n,
-      size: mapOpenAIImageSize(plan.preset.aspect_ratio, plan.preset.size),
-      quality: mapOpenAIImageQuality(plan.preset.quality),
-      output_format: plan.preset.output_format
-    });
+  if (isOpenAIImageEdit(plan)) {
+    return {
+      method: "POST",
+      headers: authorization,
+      body: await buildOpenAIImagesEditFormData(plan)
+    };
+  }
+
+  return {
+    method: "POST",
+    headers: {
+      ...authorization,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(buildOpenAIImagesRequest(plan))
+  };
+}
+
+export function buildOpenAIImagesRequest(
+  plan: ResolvedGenerationPlan
+): Record<string, unknown> {
+  if (isOpenAIImageEdit(plan)) {
+    throw new Error("OpenAI image edits must be sent as multipart/form-data.");
   }
 
   return removeUndefined({
@@ -92,6 +97,30 @@ export async function buildOpenAIImagesRequest(
     output_format: plan.preset.output_format,
     response_format: "b64_json"
   });
+}
+
+export async function buildOpenAIImagesEditFormData(plan: ResolvedGenerationPlan): Promise<FormData> {
+  if (plan.referenceImages.length === 0) {
+    throw new Error("OpenAI image edits require at least one reference image.");
+  }
+
+  const form = new FormData();
+  appendFormValue(form, "model", plan.model);
+  appendFormValue(form, "prompt", plan.prompt);
+  appendFormValue(form, "n", plan.preset.n);
+  appendFormValue(form, "size", mapOpenAIImageSize(plan.preset.aspect_ratio, plan.preset.size));
+  appendFormValue(form, "quality", mapOpenAIImageQuality(plan.preset.quality));
+  appendFormValue(form, "output_format", plan.preset.output_format);
+
+  for (const image of plan.referenceImages) {
+    form.append("image[]", await readImageBlob(image), basename(image.path));
+  }
+
+  if (plan.maskImage) {
+    form.append("mask", await readImageBlob(plan.maskImage), basename(plan.maskImage.path));
+  }
+
+  return form;
 }
 
 export function extractOpenAIImages(response: OpenAIImagesResponse): ProviderImageOutput[] {
@@ -123,18 +152,25 @@ export function extractOpenAIImages(response: OpenAIImagesResponse): ProviderIma
 function buildOpenAIImagesUrl(baseUrl: string, plan: ResolvedGenerationPlan): string {
   return buildOpenAIProtocolUrl(
     baseUrl,
-    plan.referenceImages.length > 0 || plan.maskImage ? "images/edits" : "images/generations"
+    isOpenAIImageEdit(plan) ? "images/edits" : "images/generations"
   );
 }
 
-async function readImageReference(image: {
+function isOpenAIImageEdit(plan: ResolvedGenerationPlan): boolean {
+  return plan.referenceImages.length > 0 || Boolean(plan.maskImage);
+}
+
+async function readImageBlob(image: {
   path: string;
   mime_type: string;
-}): Promise<{ image_url: string }> {
-  const data = (await readFile(image.path)).toString("base64");
-  return {
-    image_url: `data:${image.mime_type};base64,${data}`
-  };
+}): Promise<Blob> {
+  const data = await readFile(image.path);
+  return new Blob([new Uint8Array(data)], { type: image.mime_type });
+}
+
+function appendFormValue(form: FormData, name: string, value: string | number | undefined): void {
+  if (value === undefined) return;
+  form.append(name, String(value));
 }
 
 function mapOpenAIImageSize(aspectRatio: string, size: string): string | undefined {

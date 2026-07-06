@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createGenerationRun } from "../src/assets/output.js";
 import { defaultConfig } from "../src/config/defaults.js";
 import {
+  buildOpenAIImagesEditFormData,
+  buildOpenAIImagesFetchInit,
   buildOpenAIImagesRequest,
   extractOpenAIImages,
   OpenAIImagesAdapter
@@ -39,7 +41,7 @@ afterEach(async () => {
 
 describe("OpenAI images adapter", () => {
   it("builds an OpenAI-compatible image generation request", async () => {
-    await expect(buildOpenAIImagesRequest(plan)).resolves.toEqual({
+    expect(buildOpenAIImagesRequest(plan)).toEqual({
       model: "gpt-image-2",
       prompt: "test prompt",
       n: 2,
@@ -50,7 +52,7 @@ describe("OpenAI images adapter", () => {
     });
   });
 
-  it("builds an OpenAI-compatible image edit request with references and mask", async () => {
+  it("builds an OpenAI-compatible multipart image edit request with references and mask", async () => {
     const referencePath = join(tempDir, "reference.png");
     const maskPath = join(tempDir, "mask.png");
     await writeFile(referencePath, "reference image");
@@ -71,22 +73,46 @@ describe("OpenAI images adapter", () => {
       }
     };
 
-    await expect(buildOpenAIImagesRequest(planWithReference)).resolves.toEqual({
-      model: "gpt-image-2",
-      prompt: "test prompt",
-      images: [
+    const form = await buildOpenAIImagesEditFormData(planWithReference);
+    expect(form.get("model")).toBe("gpt-image-2");
+    expect(form.get("prompt")).toBe("test prompt");
+    expect(form.get("n")).toBe("2");
+    expect(form.get("size")).toBe("1024x1536");
+    expect(form.get("quality")).toBe("high");
+    expect(form.get("output_format")).toBe("png");
+    expect(form.getAll("image[]")).toHaveLength(1);
+    await expect((form.get("image[]") as Blob).text()).resolves.toBe("reference image");
+    await expect((form.get("mask") as Blob).text()).resolves.toBe("mask image");
+  });
+
+  it("uses JSON for generations and multipart without manual content-type for edits", async () => {
+    const referencePath = join(tempDir, "reference.png");
+    await writeFile(referencePath, "reference image");
+    const planWithReference = {
+      ...plan,
+      referenceImages: [
         {
-          image_url: `data:image/png;base64,${Buffer.from("reference image").toString("base64")}`
+          path: referencePath,
+          mime_type: "image/png",
+          bytes: 15
         }
-      ],
-      mask: {
-        image_url: `data:image/png;base64,${Buffer.from("mask image").toString("base64")}`
-      },
-      n: 2,
-      size: "1024x1536",
-      quality: "high",
-      output_format: "png"
+      ]
+    };
+
+    const generationInit = await buildOpenAIImagesFetchInit(plan, "test-key");
+    expect(generationInit.headers).toEqual(
+      expect.objectContaining({
+        Authorization: "Bearer test-key",
+        "Content-Type": "application/json"
+      })
+    );
+    expect(typeof generationInit.body).toBe("string");
+
+    const editInit = await buildOpenAIImagesFetchInit(planWithReference, "test-key");
+    expect(editInit.headers).toEqual({
+      Authorization: "Bearer test-key"
     });
+    expect(editInit.body).toBeInstanceOf(FormData);
   });
 
   it("extracts b64 and URL image outputs", () => {
@@ -184,7 +210,11 @@ describe("OpenAI images adapter", () => {
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.openai.com/v1/images/edits",
       expect.objectContaining({
-        method: "POST"
+        method: "POST",
+        headers: {
+          Authorization: "Bearer test-key"
+        },
+        body: expect.any(FormData)
       })
     );
   });

@@ -157,7 +157,7 @@ picgen create --provider gemini_official --reference ./reference.png --preset po
 
 Dry-run output should include only reference image paths, MIME types, and byte sizes. It must not print or expose image base64.
 
-Alpha supports reference images through both Gemini and OpenAI-compatible providers. OpenAI-compatible providers should use `/v1/images/edits` when `--reference` or `--mask` is present. Gemini providers should use `generateContent`; masks are treated as guidance images rather than native inpainting.
+Alpha supports reference images through both Gemini and OpenAI-compatible providers. OpenAI-compatible providers should use `/v1/images/edits` with multipart `image[]` uploads when `--reference` is present, and multipart `mask` uploads when `--mask` is present. Gemini providers should use `generateContent`; masks are treated as guidance images rather than native inpainting.
 
 ## Output Asset Contract
 

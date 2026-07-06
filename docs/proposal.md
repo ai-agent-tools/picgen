@@ -62,7 +62,7 @@ PicGen should be visible to agents, but should not silently spend quota.
 Use `picgen create --dry-run` to show the planned provider, model, preset, aspect ratio, quantity, and prompt before generation.
 Manual CLI generation asks for confirmation before contacting a provider. `--yes` skips that confirmation for explicit user-driven calls.
 
-Reference images are passed with repeated `--reference <path>` flags. OpenAI-compatible providers use `/v1/images/edits` for reference-image generation; Gemini providers use `generateContent` by sending local files as inline image parts. Local mask edits use `--mask <path>` with at least one `--reference`: OpenAI-compatible providers send native masks to `/v1/images/edits`, while Gemini treats masks as guidance images with explicit edit instructions.
+Reference images are passed with repeated `--reference <path>` flags. OpenAI-compatible providers use `/v1/images/edits` with multipart `image[]` uploads for reference-image generation; Gemini providers use `generateContent` by sending local files as inline image parts. Local mask edits use `--mask <path>` with at least one `--reference`: OpenAI-compatible providers send native multipart `mask` files to `/v1/images/edits`, while Gemini treats masks as guidance images with explicit edit instructions.
 
 ## Alpha Commands
 

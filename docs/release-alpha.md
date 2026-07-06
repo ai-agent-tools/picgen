@@ -138,7 +138,7 @@ Provider image payloads and Gemini thought signatures are redacted from metadata
 
 ## Current Alpha Limits
 
-- OpenAI-compatible providers use `/v1/images/generations` for text-to-image and `/v1/images/edits` for reference-image or mask edits.
+- OpenAI-compatible providers use `/v1/images/generations` for text-to-image and `/v1/images/edits` with multipart `image[]` / `mask` uploads for reference-image or mask edits.
 - Gemini providers support reference images and mask-guided edits through `generateContent`; mask edits are guidance-based, not native inpainting.
 - Gemini may return PNG even when a preset says jpeg or webp; PicGen does not transcode output formats yet.
 - API keys are read from environment variables or `.env`; keychain storage is not implemented.

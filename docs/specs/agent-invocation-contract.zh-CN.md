@@ -205,7 +205,7 @@ picgen create --provider gemini_official --reference ./reference.png --preset po
 
 dry-run 输出只应包含参考图路径、MIME 类型和文件大小，不应输出或展示图片 base64。
 
-Alpha 阶段 Gemini 和 OpenAI-compatible provider 都支持参考图。OpenAI-compatible provider 在传入 `--reference` 或 `--mask` 时应走 `/v1/images/edits`；Gemini provider 继续走 `generateContent`，其中 mask 是提示词引导的遮罩参考图，不等同于原生 inpainting。
+Alpha 阶段 Gemini 和 OpenAI-compatible provider 都支持参考图。OpenAI-compatible provider 在传入 `--reference` 时应走 `/v1/images/edits`，并使用 multipart `image[]` 上传参考图；传入 `--mask` 时使用 multipart `mask` 上传遮罩图。Gemini provider 继续走 `generateContent`，其中 mask 是提示词引导的遮罩参考图，不等同于原生 inpainting。
 
 ## 图片资产协议
 

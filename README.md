@@ -84,7 +84,7 @@ Real `picgen create` calls ask for confirmation before contacting a provider. Us
 
 `picgen open` starts a local web interface at `127.0.0.1`, defaulting to port `8188`. It is a foreground local server: keep the terminal open while using the page, and press Ctrl+C to close it. The page can configure multiple providers, save API keys to PicGen's managed env file, preview generation plans, generate images, and browse saved history under `outputs/picgen`.
 
-`--reference <path>` can be repeated to pass local reference images. OpenAI-compatible providers use `/v1/images/edits` for reference-image generation, while Gemini providers pass references through `generateContent`. `--mask <path>` can be used with `--reference` for local edits: OpenAI-compatible providers send a native mask to `/v1/images/edits`; Gemini providers use the mask as an additional guide image with explicit edit instructions.
+`--reference <path>` can be repeated to pass local reference images. OpenAI-compatible providers use `/v1/images/edits` with multipart `image[]` uploads for reference-image generation, while Gemini providers pass references through `generateContent`. `--mask <path>` can be used with `--reference` for local edits: OpenAI-compatible providers send a native multipart `mask` file to `/v1/images/edits`; Gemini providers use the mask as an additional guide image with explicit edit instructions.
 
 Gemini generation requests ask for image-only responses with `responseModalities: ["IMAGE"]`. Provider health checks still use a text-only request so they can verify host, key, model, and endpoint readiness without triggering image generation.
 
