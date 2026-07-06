@@ -183,7 +183,18 @@ Run `picgen provider list`, enable a provider, add a fallback provider, or adjus
 
 ## Release Gate
 
-Before publishing:
+PicGen publishes npm releases through GitHub Actions and npm Trusted Publisher.
+
+Trusted Publisher settings on npm:
+
+- Publisher: GitHub Actions
+- Organization or user: `ai-agent-tools`
+- Repository: `picgen`
+- Workflow filename: `publish.yml`
+- Environment name: `npm`
+- Allowed actions: `Allow npm publish`
+
+Before creating a release tag:
 
 ```bash
 npm run typecheck
@@ -192,11 +203,16 @@ npm run build
 npm pack --dry-run
 ```
 
-Publish when ready:
+Publish when ready by bumping the package version and pushing the generated tag:
 
 ```bash
-npm publish --otp <code>
+npm version prerelease --preid=alpha
+git push github main --follow-tags
 ```
+
+The workflow only publishes on pushed tags matching `v*`. Normal pushes to `main` do not publish.
+
+The tag version and `package.json` version must match. npm versions are immutable; never reuse a version that has already been published.
 
 After publishing, ask trial users to upgrade with:
 

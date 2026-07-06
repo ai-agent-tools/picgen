@@ -156,3 +156,16 @@ picgen update check
 ```bash
 PICGEN_DISABLE_UPDATE_CHECK=1 picgen doctor
 ```
+
+## Maintainer Release
+
+npm publishing uses GitHub Actions with npm Trusted Publisher. Normal pushes to `main` do not publish; pushing a `v*` tag triggers `.github/workflows/publish.yml`.
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm pack --dry-run
+npm version prerelease --preid=alpha
+git push github main --follow-tags
+```

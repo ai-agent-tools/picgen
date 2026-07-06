@@ -105,3 +105,34 @@ npm run build
 ```
 
 If generation behavior changes, also run at least one dry-run command and inspect the planned provider/model/preset.
+
+## Release
+
+npm publishing uses GitHub Actions with npm Trusted Publisher. Normal pushes to `main` do not publish. Publishing is triggered only by pushing a `v*` git tag, handled by `.github/workflows/publish.yml`.
+
+npm Trusted Publisher should be configured as:
+
+- Publisher: GitHub Actions
+- Organization or user: `ai-agent-tools`
+- Repository: `picgen`
+- Workflow filename: `publish.yml`
+- Environment name: `npm`
+- Allowed actions: `Allow npm publish`
+
+Before creating a release tag, run:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm pack --dry-run
+```
+
+To publish the next alpha version:
+
+```bash
+npm version prerelease --preid=alpha
+git push github main --follow-tags
+```
+
+Do not reuse an npm version that has already been published. If a workflow fails after npm publish succeeds, bump to a new version before publishing again.
