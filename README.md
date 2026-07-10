@@ -59,6 +59,8 @@ picgen update check
 picgen doctor --json
 picgen create --dry-run --preset fast-draft "一张简洁的 PicGen 测试图"
 picgen create --yes --preset fast-draft "一张简洁的 PicGen 测试图"
+picgen create --n 2 --size 1088x576 --quality low "生成两张横版活动 banner"
+picgen create --aspect-ratio 16:9 --size medium "生成一张横版封面"
 picgen create --dry-run --reference ./reference.png "基于参考图生成一张品牌海报"
 picgen create --yes --reference ./reference.png "基于参考图生成一张品牌海报"
 picgen create --dry-run --reference ./room.png --mask ./mask.png "只把沙发换成蓝色"
@@ -85,6 +87,8 @@ Real `picgen create` calls ask for confirmation before contacting a provider. Us
 `picgen open` starts a local web interface at `127.0.0.1`, defaulting to port `8188`. It is a foreground local server: keep the terminal open while using the page, and press Ctrl+C to close it. The page can configure multiple providers, save API keys to PicGen's managed env file, preview generation plans, generate images, and browse saved history under `outputs/picgen`.
 
 `--reference <path>` can be repeated to pass local reference images. OpenAI-compatible providers use `/v1/images/edits` with multipart `image[]` uploads for reference-image generation, while Gemini providers pass references through `generateContent`. `--mask <path>` can be used with `--reference` for local edits: OpenAI-compatible providers send a native multipart `mask` file to `/v1/images/edits`; Gemini providers use the mask as an additional guide image with explicit edit instructions.
+
+One-off generation settings such as `--n`, `--size`, `--aspect-ratio`, `--quality`, and `--output-format` override preset defaults without changing user preferences. OpenAI-compatible providers receive exact `WIDTHxHEIGHT` sizes when `--size` is provided, such as `1088x576`. If only an aspect ratio is known, PicGen maps it to a low-cost 1K size, such as `16:9 -> 1024x576` and `3:4 -> 768x1024`. Gemini providers receive `aspectRatio` plus `imageSize`; exact pixel sizes are converted to the closest supported ratio and usually `1K` for speed and cost.
 
 Gemini generation requests ask for image-only responses with `responseModalities: ["IMAGE"]`. Provider health checks still use a text-only request so they can verify host, key, model, and endpoint readiness without triggering image generation.
 

@@ -299,6 +299,11 @@ async function planGeneration(body: Record<string, unknown>): Promise<Record<str
     providerName: asOptionalString(body.provider),
     modeName: asOptionalString(body.mode),
     model: asOptionalString(body.model),
+    n: asOptionalInteger(body.n),
+    size: asOptionalString(body.size),
+    aspectRatio: asOptionalString(body.aspect_ratio),
+    quality: asOptionalString(body.quality),
+    outputFormat: asOutputFormat(body.output_format),
     outputDirectory: asOptionalString(body.output_directory),
     referenceImages,
     maskImage
@@ -324,6 +329,11 @@ async function generate(body: Record<string, unknown>): Promise<Record<string, u
     providerName: asOptionalString(body.provider),
     modeName: asOptionalString(body.mode),
     model: asOptionalString(body.model),
+    n: asOptionalInteger(body.n),
+    size: asOptionalString(body.size),
+    aspectRatio: asOptionalString(body.aspect_ratio),
+    quality: asOptionalString(body.quality),
+    outputFormat: asOutputFormat(body.output_format),
     outputDirectory: asOptionalString(body.output_directory),
     referenceImages,
     maskImage
@@ -475,6 +485,23 @@ function parseModels(raw: string): string[] {
 
 function asOptionalString(value: unknown): string | undefined {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
+}
+
+function asOptionalInteger(value: unknown): number | undefined {
+  const text = asOptionalString(value);
+  if (!text) return undefined;
+  const parsed = Number(text);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error("数量必须是正整数。");
+  }
+  return parsed;
+}
+
+function asOutputFormat(value: unknown): "png" | "jpeg" | "webp" | undefined {
+  const text = asOptionalString(value);
+  if (!text) return undefined;
+  if (text === "png" || text === "jpeg" || text === "webp") return text;
+  throw new Error("输出格式必须是 png、jpeg 或 webp。");
 }
 
 function parsePathList(value: unknown): string[] {
@@ -642,8 +669,8 @@ const appHtml = `<!doctype html>
     async function post(path,body){await api(path,{method:'POST',body:JSON.stringify(body)});await load()}
     async function patch(path,body){await api(path,{method:'PATCH',body:JSON.stringify(body)});await load()}
     async function del(path){await api(path,{method:'DELETE'});await load()}
-    function renderGenerate(){const s=state.data;const prefs=JSON.parse(localStorage.getItem('picgen:prefs')||'{}');$('#generate').innerHTML=\`<div class="cols"><div class="panel"><h2>生成图片</h2><label>提示词<textarea id="prompt">\${esc(prefs.prompt||'一张简洁的 PicGen 测试图，白色背景，少量蓝绿色科技感点缀')}</textarea></label><div class="formgrid"><label>渠道<select id="genProvider"><option value="">自动选择</option>\${s.providers.map(p=>'<option value="'+esc(p.name)+'" '+(prefs.provider===p.name?'selected':'')+'>'+esc(p.name)+'</option>').join('')}</select></label><label>预设<select id="genPreset">\${Object.keys(s.presets).map(p=>'<option '+((prefs.preset||'fast-draft')===p?'selected':'')+'>'+esc(p)+'</option>').join('')}</select></label><label>模型<input id="genModel" value="\${esc(prefs.model||'')}" placeholder="可选"></label><label>模式<input id="genMode" value="\${esc(prefs.mode||'')}" placeholder="可选"></label><label class="full">参考图路径<textarea id="genReferences" placeholder="/Users/me/reference.png&#10;可填写多行或逗号分隔">\${esc(prefs.references||'')}</textarea></label><label class="full">遮罩图路径<input id="genMask" value="\${esc(prefs.mask||'')}" placeholder="可选；需要同时填写参考图"></label></div><div class="actions" style="margin-top:12px"><button id="preview" class="primary">预览方案</button><button id="generateBtn" disabled>开始生成</button></div></div><div class="panel"><h2>方案 / 结果</h2><div id="plan" class="plan">还没有预览。</div><div id="result" class="result" style="margin-top:12px"></div></div></div>\`;$('#preview').onclick=preview;$('#generateBtn').onclick=generateNow}
-    function genBody(){const body={prompt:$('#prompt').value,preset:$('#genPreset').value,provider:$('#genProvider').value,model:$('#genModel').value,mode:$('#genMode').value,references:$('#genReferences').value,mask:$('#genMask').value};localStorage.setItem('picgen:prefs',JSON.stringify(body));return body}
+    function renderGenerate(){const s=state.data;const prefs=JSON.parse(localStorage.getItem('picgen:prefs')||'{}');$('#generate').innerHTML=\`<div class="cols"><div class="panel"><h2>生成图片</h2><label>提示词<textarea id="prompt">\${esc(prefs.prompt||'一张简洁的 PicGen 测试图，白色背景，少量蓝绿色科技感点缀')}</textarea></label><div class="formgrid"><label>渠道<select id="genProvider"><option value="">自动选择</option>\${s.providers.map(p=>'<option value="'+esc(p.name)+'" '+(prefs.provider===p.name?'selected':'')+'>'+esc(p.name)+'</option>').join('')}</select></label><label>预设<select id="genPreset">\${Object.keys(s.presets).map(p=>'<option '+((prefs.preset||'fast-draft')===p?'selected':'')+'>'+esc(p)+'</option>').join('')}</select></label><label>模型<input id="genModel" value="\${esc(prefs.model||'')}" placeholder="可选"></label><label>模式<input id="genMode" value="\${esc(prefs.mode||'')}" placeholder="可选"></label><label>数量<input id="genN" value="\${esc(prefs.n||'')}" placeholder="默认 1"></label><label>尺寸<input id="genSize" value="\${esc(prefs.size||'')}" placeholder="如 1088x576"></label><label>比例<input id="genAspectRatio" value="\${esc(prefs.aspect_ratio||'')}" placeholder="如 16:9"></label><label>质量<input id="genQuality" value="\${esc(prefs.quality||'')}" placeholder="low / medium / high"></label><label>格式<select id="genOutputFormat"><option value="">按预设</option>\${['png','jpeg','webp'].map(f=>'<option value="'+f+'" '+(prefs.output_format===f?'selected':'')+'>'+f+'</option>').join('')}</select></label><label class="full">参考图路径<textarea id="genReferences" placeholder="/Users/me/reference.png&#10;可填写多行或逗号分隔">\${esc(prefs.references||'')}</textarea></label><label class="full">遮罩图路径<input id="genMask" value="\${esc(prefs.mask||'')}" placeholder="可选；需要同时填写参考图"></label></div><div class="actions" style="margin-top:12px"><button id="preview" class="primary">预览方案</button><button id="generateBtn" disabled>开始生成</button></div></div><div class="panel"><h2>方案 / 结果</h2><div id="plan" class="plan">还没有预览。</div><div id="result" class="result" style="margin-top:12px"></div></div></div>\`;$('#preview').onclick=preview;$('#generateBtn').onclick=generateNow}
+    function genBody(){const body={prompt:$('#prompt').value,preset:$('#genPreset').value,provider:$('#genProvider').value,model:$('#genModel').value,mode:$('#genMode').value,n:$('#genN').value,size:$('#genSize').value,aspect_ratio:$('#genAspectRatio').value,quality:$('#genQuality').value,output_format:$('#genOutputFormat').value,references:$('#genReferences').value,mask:$('#genMask').value};localStorage.setItem('picgen:prefs',JSON.stringify(body));return body}
     async function preview(){const r=await api('/api/plan',{method:'POST',body:JSON.stringify(genBody())});state.plan=r.plan;$('#plan').textContent=JSON.stringify(r.plan,null,2);$('#generateBtn').disabled=false}
     async function generateNow(){if(!state.plan&&!confirm('还没有预览方案，确定直接生成？'))return;$('#generateBtn').disabled=true;$('#result').innerHTML='<p class="muted">正在生成...</p>';try{const r=await api('/api/generate',{method:'POST',body:JSON.stringify(genBody())});$('#result').innerHTML='<p>已保存到 <span class="path">'+esc(r.output_dir)+'</span></p>'+r.images.map(img=>'<img src="/api/file?path='+encodeURIComponent(img.path)+'&token='+token+'"><div class="path">'+esc(img.path)+'</div>').join('');await renderHistory()}catch(e){$('#result').innerHTML='<p style="color:var(--danger)">'+esc(e.message)+'</p>'}finally{$('#generateBtn').disabled=false}}
     async function renderHistory(){const h=$('#history');if(!state.data)return;const r=await api('/api/history');h.innerHTML='<div class="panel"><h2>历史记录</h2><p class="muted">找回最近生成的图片和本地保存路径。</p></div><div class="gallery">'+r.runs.map(runCard).join('')+'</div>'}

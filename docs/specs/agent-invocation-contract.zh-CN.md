@@ -113,6 +113,15 @@ picgen create --dry-run --preset poster "<prompt>"
 
 默认生成 1 张图。Agent 不应为了“多给用户几个选择”擅自增加图片数量。只有用户明确要求多个方案、多张变体、对比图，或指定具体数量时，才生成多张。
 
+当用户指定数量、像素尺寸、比例、质量或输出格式时，应作为单次覆盖参数传给 PicGen，不要修改长期偏好：
+
+```bash
+picgen create --n 2 --size 1088x576 --quality low "<prompt>"
+picgen create --aspect-ratio 16:9 --size medium "<prompt>"
+```
+
+OpenAI-compatible provider 会直接收到精确 `WIDTHxHEIGHT` 尺寸。Gemini provider 会收到最接近的 `aspectRatio` 和更省钱的 `imageSize`；常见 banner 尺寸默认应映射到 `1K`，除非用户明确要求更高分辨率。
+
 示例：
 
 ```text

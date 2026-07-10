@@ -1,7 +1,9 @@
 import { join } from "node:path";
 import { cwd } from "node:process";
+import { aspectRatioFromPixelSize, parsePixelSize } from "../generation/dimensions.js";
 import type {
   PicgenConfig,
+  PresetConfig,
   ProviderCapability,
   ReferenceImage,
   ResolvedGenerationPlan
@@ -13,6 +15,11 @@ export interface ResolveOptions {
   providerName?: string;
   modeName?: string;
   model?: string;
+  aspectRatio?: string;
+  size?: string;
+  quality?: string;
+  n?: number;
+  outputFormat?: PresetConfig["output_format"];
   outputDirectory?: string;
   referenceImages?: ReferenceImage[];
   maskImage?: ReferenceImage;
@@ -27,8 +34,9 @@ export function resolveGenerationPlan(
   if (!preset) {
     throw new Error(`Unknown preset: ${presetName}`);
   }
+  const effectivePreset = applyPresetOverrides(preset, options);
 
-  const modeName = options.modeName ?? preset.mode ?? config.routing.default_mode;
+  const modeName = options.modeName ?? effectivePreset.mode ?? config.routing.default_mode;
   const mode = config.modes[modeName];
   if (!mode) {
     throw new Error(`Unknown mode: ${modeName}`);
@@ -58,7 +66,7 @@ export function resolveGenerationPlan(
       provider,
       model,
       presetName,
-      preset,
+      preset: effectivePreset,
       modeName,
       outputDirectory: options.outputDirectory ?? join(cwd(), "outputs", "picgen"),
       referenceImages: options.referenceImages ?? [],
@@ -75,6 +83,23 @@ export function resolveGenerationPlan(
   throw new Error(
     `No enabled provider can satisfy preset "${presetName}" with mode "${modeName}" and capability "${requiredCapability}".`
   );
+}
+
+function applyPresetOverrides(preset: PresetConfig, options: ResolveOptions): PresetConfig {
+  const pixelSize = options.size ? parsePixelSize(options.size) : undefined;
+  const n = options.n ?? preset.n;
+  if (!Number.isInteger(n) || n <= 0) {
+    throw new Error("--n must be a positive integer.");
+  }
+
+  return {
+    ...preset,
+    aspect_ratio: options.aspectRatio ?? (pixelSize ? aspectRatioFromPixelSize(pixelSize) : preset.aspect_ratio),
+    size: options.size ?? preset.size,
+    quality: options.quality ?? preset.quality,
+    n,
+    output_format: options.outputFormat ?? preset.output_format
+  };
 }
 
 function requiredCapabilityForOptions(options: ResolveOptions): ProviderCapability {

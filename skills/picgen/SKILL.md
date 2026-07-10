@@ -171,6 +171,15 @@ If the user explicitly says to generate directly or not ask for confirmation, yo
 
 Default to one generated image. Do not generate multiple images merely to offer options. Generate multiple images only when the user explicitly asks for multiple options, variations, comparisons, or a specific count.
 
+Use one-off generation flags when the user specifies count, size, aspect ratio, quality, or format. These flags do not change saved preferences:
+
+```bash
+picgen create --n 2 --size 1088x576 --quality low "<prompt>"
+picgen create --aspect-ratio 16:9 --size medium "<prompt>"
+```
+
+For OpenAI-compatible providers, exact `WIDTHxHEIGHT` sizes are sent directly to the image API. For Gemini providers, PicGen converts exact sizes to the nearest supported `aspectRatio` and an efficient `imageSize`, usually `1K` for typical banner requests.
+
 ## Provider Setup
 
 When terminal prompts are visible to the user, `picgen setup` is acceptable.

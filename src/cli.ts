@@ -56,6 +56,11 @@ program
   .option("--provider <name>", "Provider name.")
   .option("--mode <name>", "Mode name.")
   .option("--model <name>", "Model name.")
+  .option("--n <count>", "Number of images for this request.")
+  .option("--size <size>", "Output size such as 1088x576, small, medium, large, or auto.")
+  .option("--aspect-ratio <ratio>", "Output aspect ratio such as 1:1, 16:9, 3:4, or 9:16.")
+  .option("--quality <quality>", "Output quality: low, medium, high, or auto.")
+  .option("--output-format <format>", "Output format: png, jpeg, or webp.")
   .option("--out-dir <path>", "Output directory.")
   .option(
     "--reference <path>",

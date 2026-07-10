@@ -13,6 +13,11 @@ export interface CreateOptions {
   provider?: string;
   mode?: string;
   model?: string;
+  n?: string;
+  size?: string;
+  aspectRatio?: string;
+  quality?: string;
+  outputFormat?: string;
   outDir?: string;
   reference?: string[];
   mask?: string;
@@ -64,6 +69,11 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
     providerName: options.provider,
     modeName: options.mode,
     model: options.model,
+    n: parseImageCount(options.n),
+    size: options.size,
+    aspectRatio: options.aspectRatio,
+    quality: options.quality,
+    outputFormat: parseOutputFormat(options.outputFormat),
     outputDirectory: options.outDir,
     referenceImages,
     maskImage
@@ -171,6 +181,21 @@ export async function runCreate(promptParts: string[], options: CreateOptions): 
       2
     )
   );
+}
+
+function parseImageCount(value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    throw new Error("--n must be a positive integer.");
+  }
+  return parsed;
+}
+
+function parseOutputFormat(value: string | undefined): "png" | "jpeg" | "webp" | undefined {
+  if (value === undefined) return undefined;
+  if (value === "png" || value === "jpeg" || value === "webp") return value;
+  throw new Error("--output-format must be png, jpeg, or webp.");
 }
 
 export function toPlanOutput(plan: ResolvedGenerationPlan): GenerationPlanOutput {

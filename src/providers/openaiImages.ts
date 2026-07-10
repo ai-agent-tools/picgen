@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { basename } from "node:path";
 import { writeProviderImages } from "../assets/output.js";
+import { openAIImageSizeFor } from "../generation/dimensions.js";
 import { fetchWithProviderTimeout, resolveProviderTimeoutMs } from "./timeout.js";
 import { buildOpenAIProtocolUrl } from "./urls.js";
 import type {
@@ -92,7 +93,7 @@ export function buildOpenAIImagesRequest(
     model: plan.model,
     prompt: plan.prompt,
     n: plan.preset.n,
-    size: mapOpenAIImageSize(plan.preset.aspect_ratio, plan.preset.size),
+    size: openAIImageSizeFor(plan.preset.aspect_ratio, plan.preset.size),
     quality: mapOpenAIImageQuality(plan.preset.quality),
     output_format: plan.preset.output_format,
     response_format: "b64_json"
@@ -108,7 +109,7 @@ export async function buildOpenAIImagesEditFormData(plan: ResolvedGenerationPlan
   appendFormValue(form, "model", plan.model);
   appendFormValue(form, "prompt", plan.prompt);
   appendFormValue(form, "n", plan.preset.n);
-  appendFormValue(form, "size", mapOpenAIImageSize(plan.preset.aspect_ratio, plan.preset.size));
+  appendFormValue(form, "size", openAIImageSizeFor(plan.preset.aspect_ratio, plan.preset.size));
   appendFormValue(form, "quality", mapOpenAIImageQuality(plan.preset.quality));
   appendFormValue(form, "output_format", plan.preset.output_format);
 
@@ -171,25 +172,6 @@ async function readImageBlob(image: {
 function appendFormValue(form: FormData, name: string, value: string | number | undefined): void {
   if (value === undefined) return;
   form.append(name, String(value));
-}
-
-function mapOpenAIImageSize(aspectRatio: string, size: string): string | undefined {
-  if (/^\d+x\d+$/.test(size) || size === "auto") return size;
-
-  switch (aspectRatio) {
-    case "3:4":
-    case "2:3":
-      return "1024x1536";
-    case "4:3":
-    case "3:2":
-    case "16:9":
-    case "9:5":
-      return "1536x1024";
-    case "1:1":
-      return "1024x1024";
-    default:
-      return "auto";
-  }
 }
 
 function mapOpenAIImageQuality(quality: string): string | undefined {

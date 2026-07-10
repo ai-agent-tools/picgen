@@ -85,6 +85,15 @@ The preview should summarize:
 
 Default to 1 generated image. Agents must not increase the image count just to provide options. Use multiple images only when the user explicitly requests multiple options, variations, comparisons, or a specific count.
 
+When the user specifies a count, pixel size, aspect ratio, quality, or output format, pass it as a one-off override instead of changing preferences:
+
+```bash
+picgen create --n 2 --size 1088x576 --quality low "<prompt>"
+picgen create --aspect-ratio 16:9 --size medium "<prompt>"
+```
+
+OpenAI-compatible providers receive exact `WIDTHxHEIGHT` sizes. Gemini providers receive the nearest supported `aspectRatio` plus an efficient `imageSize`; typical banner sizes should map to `1K` unless the user explicitly asks for higher resolution.
+
 If the user explicitly says "generate directly", "do not ask", or equivalent, the agent may skip the user-facing confirmation step. The agent should still construct a plan internally.
 
 ## Preferences and One-off Overrides

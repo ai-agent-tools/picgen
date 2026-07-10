@@ -82,10 +82,40 @@ describe("Gemini generateContent adapter", () => {
         responseModalities: ["IMAGE"],
         imageConfig: {
           aspectRatio: "3:4",
-          imageSize: "2K"
+          imageSize: "1K"
         }
       }
     });
+  });
+
+  it("maps exact size overrides to Gemini aspect ratio and image size", () => {
+    const overriddenPlan = resolveGenerationPlan(
+      {
+        ...defaultConfig,
+        routing: {
+          default_mode: "balanced",
+          default_provider: "gemini_official",
+          fallback_providers: ["openai_official"]
+        }
+      },
+      {
+        prompt: "test prompt",
+        presetName: "poster",
+        size: "1088x576",
+        n: 2,
+        outputDirectory: tempDir
+      }
+    );
+
+    expect(buildGeminiGenerateContentRequest(overriddenPlan)).toMatchObject({
+      generationConfig: {
+        imageConfig: {
+          aspectRatio: "16:9",
+          imageSize: "1K"
+        }
+      }
+    });
+    expect(overriddenPlan.preset.n).toBe(2);
   });
 
   it("extracts inlineData image parts", () => {

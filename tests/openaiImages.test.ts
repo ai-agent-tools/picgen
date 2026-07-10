@@ -45,7 +45,7 @@ describe("OpenAI images adapter", () => {
       model: "gpt-image-2",
       prompt: "test prompt",
       n: 1,
-      size: "1024x1536",
+      size: "768x1024",
       quality: "high",
       output_format: "png",
       response_format: "b64_json"
@@ -77,7 +77,7 @@ describe("OpenAI images adapter", () => {
     expect(form.get("model")).toBe("gpt-image-2");
     expect(form.get("prompt")).toBe("test prompt");
     expect(form.get("n")).toBe("1");
-    expect(form.get("size")).toBe("1024x1536");
+    expect(form.get("size")).toBe("768x1024");
     expect(form.get("quality")).toBe("high");
     expect(form.get("output_format")).toBe("png");
     expect(form.getAll("image[]")).toHaveLength(1);
@@ -113,6 +113,24 @@ describe("OpenAI images adapter", () => {
       Authorization: "Bearer test-key"
     });
     expect(editInit.body).toBeInstanceOf(FormData);
+  });
+
+  it("passes one-off exact size and count overrides to OpenAI-compatible requests", () => {
+    const overriddenPlan = resolveGenerationPlan(defaultConfig, {
+      prompt: "test prompt",
+      providerName: "openai_official",
+      presetName: "poster",
+      size: "1088x576",
+      n: 2,
+      outputDirectory: tempDir
+    });
+
+    expect(buildOpenAIImagesRequest(overriddenPlan)).toEqual(
+      expect.objectContaining({
+        n: 2,
+        size: "1088x576"
+      })
+    );
   });
 
   it("extracts b64 and URL image outputs", () => {

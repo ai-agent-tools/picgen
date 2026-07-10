@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { writeProviderImages } from "../assets/output.js";
+import { geminiImageConfigFor } from "../generation/dimensions.js";
 import { fetchWithProviderTimeout, resolveProviderTimeoutMs } from "./timeout.js";
 import { buildGeminiProtocolUrl } from "./urls.js";
 import type {
@@ -96,10 +97,7 @@ export function buildGeminiGenerateContentRequest(
     ],
     generationConfig: {
       responseModalities: ["IMAGE"],
-      imageConfig: removeUndefined({
-        aspectRatio: plan.preset.aspect_ratio,
-        imageSize: mapGeminiImageSize(plan.preset.size)
-      })
+      imageConfig: removeUndefined(geminiImageConfigFor(plan.preset.aspect_ratio, plan.preset.size))
     }
   };
 }
@@ -170,21 +168,6 @@ function normalizeInlineData(
     data: inlineData.data,
     mimeType: inlineData.mime_type
   };
-}
-
-function mapGeminiImageSize(size: string): string | undefined {
-  switch (size) {
-    case "small":
-      return "512";
-    case "medium":
-      return "1K";
-    case "large":
-      return "2K";
-    case "auto":
-      return undefined;
-    default:
-      return /^(512|1K|2K|4K)$/.test(size) ? size : undefined;
-  }
 }
 
 function removeUndefined<T extends Record<string, unknown>>(input: T): Partial<T> {
