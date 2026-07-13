@@ -1,2 +1,2 @@
 export const PACKAGE_NAME = "@ai-agent-tools/picgen";
-export const VERSION = "0.1.0-alpha.18";
+export const VERSION = "0.1.0-alpha.19";
