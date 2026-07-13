@@ -115,7 +115,7 @@ describe("OpenAI images adapter", () => {
     expect(editInit.body).toBeInstanceOf(FormData);
   });
 
-  it("passes one-off exact size and count overrides to OpenAI-compatible requests", () => {
+  it("normalizes one-off exact size overrides for OpenAI-compatible requests", () => {
     const overriddenPlan = resolveGenerationPlan(defaultConfig, {
       prompt: "test prompt",
       providerName: "openai_official",
@@ -128,7 +128,7 @@ describe("OpenAI images adapter", () => {
     expect(buildOpenAIImagesRequest(overriddenPlan)).toEqual(
       expect.objectContaining({
         n: 2,
-        size: "1088x576"
+        size: "1120x592"
       })
     );
   });
@@ -235,6 +235,56 @@ describe("OpenAI images adapter", () => {
         body: expect.any(FormData)
       })
     );
+  });
+
+  it("splits multi-image OpenAI requests into one-image provider calls", async () => {
+    const multiPlan = resolveGenerationPlan(defaultConfig, {
+      prompt: "test prompt",
+      providerName: "openai_official",
+      presetName: "poster",
+      n: 2,
+      outputDirectory: tempDir
+    });
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: [{ b64_json: Buffer.from("first image").toString("base64") }]
+          }),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: [{ b64_json: Buffer.from("second image").toString("base64") }]
+          }),
+          {
+            status: 200,
+            headers: { "content-type": "application/json" }
+          }
+        )
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const run = await createGenerationRun(multiPlan, new Date("2026-07-02T10:11:12"));
+    const result = await new OpenAIImagesAdapter().generate(multiPlan, run);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    for (const call of fetchMock.mock.calls) {
+      expect(JSON.parse(call[1].body as string)).toEqual(expect.objectContaining({ n: 1 }));
+    }
+    expect(result.images.map((image) => image.id)).toEqual(["image-1", "image-2"]);
+    expect(result.provider_response).toEqual({
+      requests: [
+        expect.objectContaining({ data: [expect.any(Object)] }),
+        expect.objectContaining({ data: [expect.any(Object)] })
+      ]
+    });
   });
 
   it("surfaces provider error messages", async () => {

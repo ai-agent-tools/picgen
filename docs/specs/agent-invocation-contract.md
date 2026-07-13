@@ -92,7 +92,7 @@ picgen create --n 2 --size 1088x576 --quality low "<prompt>"
 picgen create --aspect-ratio 16:9 --size medium "<prompt>"
 ```
 
-OpenAI-compatible providers receive exact `WIDTHxHEIGHT` sizes. Gemini providers receive the nearest supported `aspectRatio` plus an efficient `imageSize`; typical banner sizes should map to `1K` unless the user explicitly asks for higher resolution.
+For OpenAI-compatible providers, PicGen normalizes requested `WIDTHxHEIGHT` sizes to satisfy current model rules before sending the request. For example, a user request such as `1088x576` may be sent as `1120x592` when the original size is below the model's current minimum pixel budget. The provider may still return a nearby but different final pixel size; PicGen saves the provider result as-is and does not resize, crop, pad, or stretch the image. When multiple images are requested, PicGen sends OpenAI-compatible requests as multiple one-image calls for better third-party channel compatibility. Gemini providers receive the nearest supported `aspectRatio` plus an efficient `imageSize`; typical banner sizes should map to `1K` unless the user explicitly asks for higher resolution.
 
 If the user explicitly says "generate directly", "do not ask", or equivalent, the agent may skip the user-facing confirmation step. The agent should still construct a plan internally.
 

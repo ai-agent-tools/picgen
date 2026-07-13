@@ -83,7 +83,7 @@ export const defaultConfig: PicgenConfig = {
       size: "medium",
       quality: "low",
       n: 1,
-      output_format: "jpeg"
+      output_format: "png"
     }
   }
 };

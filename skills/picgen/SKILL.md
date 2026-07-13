@@ -178,7 +178,15 @@ picgen create --n 2 --size 1088x576 --quality low "<prompt>"
 picgen create --aspect-ratio 16:9 --size medium "<prompt>"
 ```
 
-For OpenAI-compatible providers, exact `WIDTHxHEIGHT` sizes are sent directly to the image API. For Gemini providers, PicGen converts exact sizes to the nearest supported `aspectRatio` and an efficient `imageSize`, usually `1K` for typical banner requests.
+For OpenAI-compatible providers, PicGen normalizes requested `WIDTHxHEIGHT` sizes to satisfy current model rules before sending the request. For example, `1088x576` may be sent as `1120x592` if the original size is below the current minimum pixel budget. The provider may still return a nearby but different final pixel size; PicGen saves the provider result as-is and does not resize, crop, pad, or stretch the image.
+
+When explaining this to non-technical users, keep it simple:
+
+```text
+你指定的尺寸会作为目标尺寸使用。PicGen 会先按模型规则选择一个最接近的合法请求尺寸，最终图片尺寸以模型实际返回为准，不会额外拉伸或裁切。
+```
+
+For Gemini providers, PicGen converts exact sizes to the nearest supported `aspectRatio` and an efficient `imageSize`, usually `1K` for typical banner requests.
 
 ## Provider Setup
 

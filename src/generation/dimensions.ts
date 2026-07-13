@@ -8,6 +8,18 @@ export interface GeminiImageConfig extends Record<string, unknown> {
   imageSize?: string;
 }
 
+export interface OpenAIImageSizePlan {
+  requested_size: string;
+  provider_size?: string;
+  size_adjusted: boolean;
+  size_note?: string;
+}
+
+const OPENAI_MIN_PIXELS = 655_360;
+const OPENAI_MAX_PIXELS = 8_294_400;
+const OPENAI_MAX_EDGE = 3840;
+const OPENAI_SIZE_MULTIPLE = 16;
+
 const SUPPORTED_GEMINI_RATIOS = [
   "1:1",
   "2:3",
@@ -64,23 +76,73 @@ export function validateOpenAIPixelSize(size: PixelSize): void {
   if (size.width > 3840 || size.height > 3840) {
     throw new Error("OpenAI image size cannot exceed 3840 pixels on either edge.");
   }
+
+  const pixels = size.width * size.height;
+  if (pixels < OPENAI_MIN_PIXELS) {
+    throw new Error("OpenAI image size is below the current minimum pixel budget.");
+  }
+
+  if (pixels > OPENAI_MAX_PIXELS) {
+    throw new Error("OpenAI image size exceeds the current maximum pixel budget.");
+  }
 }
 
 export function openAIImageSizeFor(aspectRatio: string, size: string): string | undefined {
+  return openAIImageSizePlanFor(aspectRatio, size).provider_size;
+}
+
+export function openAIImageSizePlanFor(aspectRatio: string, size: string): OpenAIImageSizePlan {
   const pixelSize = parsePixelSize(size);
   if (pixelSize) {
-    validateOpenAIPixelSize(pixelSize);
-    return `${pixelSize.width}x${pixelSize.height}`;
+    const normalized = normalizeOpenAIPixelSize(pixelSize);
+    const providerSize = formatPixelSize(normalized);
+    const requestedSize = formatPixelSize(pixelSize);
+    return {
+      requested_size: requestedSize,
+      provider_size: providerSize,
+      size_adjusted: providerSize !== requestedSize,
+      size_note:
+        providerSize === requestedSize
+          ? "OpenAI-compatible providers may still return a different final pixel size; PicGen saves the provider result without resizing."
+          : `Adjusted to ${providerSize} to satisfy OpenAI image size rules. Providers may still return a different final pixel size; PicGen saves the provider result without resizing.`
+    };
   }
 
-  if (size === "auto") return "auto";
+  if (size === "auto") {
+    return {
+      requested_size: size,
+      provider_size: "auto",
+      size_adjusted: false,
+      size_note:
+        "Provider will choose the request size automatically. Final pixel size depends on the model/provider response."
+    };
+  }
 
   const ratio = parseAspectRatio(aspectRatio);
-  if (!ratio) return "auto";
+  if (!ratio) {
+    return {
+      requested_size: size,
+      provider_size: "auto",
+      size_adjusted: true,
+      size_note:
+        "Aspect ratio could not be parsed, so PicGen will ask the provider to choose a size automatically."
+    };
+  }
 
   const longEdge = size === "small" ? 512 : 1024;
-  const resolved = pixelSizeForLongEdge(ratio, longEdge);
-  return `${resolved.width}x${resolved.height}`;
+  const requested = pixelSizeForLongEdge(ratio, longEdge);
+  const normalized = normalizeOpenAIPixelSize(requested);
+  const requestedSize = formatPixelSize(requested);
+  const providerSize = formatPixelSize(normalized);
+  return {
+    requested_size: size,
+    provider_size: providerSize,
+    size_adjusted: providerSize !== requestedSize,
+    size_note:
+      providerSize === requestedSize
+        ? "OpenAI-compatible providers may still return a different final pixel size; PicGen saves the provider result without resizing."
+        : `Preset size ${size} maps to ${requestedSize}, adjusted to ${providerSize} to satisfy OpenAI image size rules. Providers may still return a different final pixel size; PicGen saves the provider result without resizing.`
+  };
 }
 
 export function geminiImageConfigFor(aspectRatio: string, size: string): GeminiImageConfig {
@@ -143,8 +205,69 @@ function pixelSizeForLongEdge(ratio: PixelSize, longEdge: number): PixelSize {
   };
 }
 
+function normalizeOpenAIPixelSize(size: PixelSize): PixelSize {
+  if (size.width <= 0 || size.height <= 0) {
+    throw new Error("Image size must be positive.");
+  }
+
+  const ratio = size.width / size.height;
+  if (ratio < 1 / 3 || ratio > 3) {
+    throw new Error("OpenAI image size aspect ratio must be between 1:3 and 3:1.");
+  }
+
+  let normalized = {
+    width: ceilToMultiple(size.width, OPENAI_SIZE_MULTIPLE),
+    height: ceilToMultiple(size.height, OPENAI_SIZE_MULTIPLE)
+  };
+
+  normalized = scaleToPixelBudget(normalized);
+
+  if (normalized.width > OPENAI_MAX_EDGE || normalized.height > OPENAI_MAX_EDGE) {
+    throw new Error("OpenAI image size cannot exceed 3840 pixels on either edge.");
+  }
+
+  validateOpenAIPixelSize(normalized);
+  return normalized;
+}
+
+function scaleToPixelBudget(size: PixelSize): PixelSize {
+  const pixels = size.width * size.height;
+  if (pixels >= OPENAI_MIN_PIXELS && pixels <= OPENAI_MAX_PIXELS) return size;
+
+  const scale =
+    pixels < OPENAI_MIN_PIXELS
+      ? Math.sqrt(OPENAI_MIN_PIXELS / pixels)
+      : Math.sqrt(OPENAI_MAX_PIXELS / pixels);
+
+  const width =
+    pixels < OPENAI_MIN_PIXELS
+      ? ceilToMultiple(size.width * scale, OPENAI_SIZE_MULTIPLE)
+      : floorToMultiple(size.width * scale, OPENAI_SIZE_MULTIPLE);
+  const height =
+    pixels < OPENAI_MIN_PIXELS
+      ? ceilToMultiple(size.height * scale, OPENAI_SIZE_MULTIPLE)
+      : floorToMultiple(size.height * scale, OPENAI_SIZE_MULTIPLE);
+
+  return {
+    width: Math.max(OPENAI_SIZE_MULTIPLE, width),
+    height: Math.max(OPENAI_SIZE_MULTIPLE, height)
+  };
+}
+
+function formatPixelSize(size: PixelSize): string {
+  return `${size.width}x${size.height}`;
+}
+
 function roundToMultiple(value: number, multiple: number): number {
   return Math.max(multiple, Math.round(value / multiple) * multiple);
+}
+
+function ceilToMultiple(value: number, multiple: number): number {
+  return Math.max(multiple, Math.ceil(value / multiple) * multiple);
+}
+
+function floorToMultiple(value: number, multiple: number): number {
+  return Math.max(multiple, Math.floor(value / multiple) * multiple);
 }
 
 function gcd(a: number, b: number): number {

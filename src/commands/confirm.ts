@@ -26,14 +26,28 @@ export async function confirmGeneration(
 }
 
 export function formatGenerationPreview(plan: GenerationPlanOutput): string {
-  return [
+  const lines = [
     `Provider: ${plan.provider} (${plan.protocol})`,
     `Model: ${plan.model}`,
     `Preset: ${plan.preset}`,
     `Images: ${plan.n}`,
+    `Size: ${formatSizePreview(plan)}`,
     `Reference images: ${plan.reference_images.length}`,
     `Mask image: ${plan.mask_image ? "yes" : "no"}`,
     `Aspect ratio: ${plan.aspect_ratio}`,
     `Output: ${plan.output_directory}`
-  ].join("\n");
+  ];
+
+  if (plan.size_request?.size_note) {
+    lines.push(`Size note: ${plan.size_request.size_note}`);
+  }
+
+  return lines.join("\n");
+}
+
+function formatSizePreview(plan: GenerationPlanOutput): string {
+  const request = plan.size_request;
+  if (!request) return plan.size;
+  if (!request.provider_size || request.provider_size === plan.size) return plan.size;
+  return `${request.requested_size} -> ${request.provider_size}`;
 }

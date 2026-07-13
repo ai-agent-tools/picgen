@@ -120,7 +120,7 @@ picgen create --n 2 --size 1088x576 --quality low "<prompt>"
 picgen create --aspect-ratio 16:9 --size medium "<prompt>"
 ```
 
-OpenAI-compatible provider 会直接收到精确 `WIDTHxHEIGHT` 尺寸。Gemini provider 会收到最接近的 `aspectRatio` 和更省钱的 `imageSize`；常见 banner 尺寸默认应映射到 `1K`，除非用户明确要求更高分辨率。
+OpenAI-compatible provider 请求前，PicGen 会把用户指定的 `WIDTHxHEIGHT` 尺寸调整为符合模型规则的合法请求尺寸。例如用户要求 `1088x576`，如果低于模型当前最小像素限制，PicGen 可能实际发送 `1120x592`。provider 仍可能返回接近但不完全一致的最终像素尺寸；PicGen 会原样保存 provider 返回结果，不做 resize、裁切、补边或拉伸。用户要求多张图时，PicGen 会把 OpenAI-compatible 请求拆成多次单图请求，提高第三方渠道兼容性。Gemini provider 会收到最接近的 `aspectRatio` 和更省钱的 `imageSize`；常见 banner 尺寸默认应映射到 `1K`，除非用户明确要求更高分辨率。
 
 示例：
 

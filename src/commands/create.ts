@@ -2,6 +2,7 @@ import YAML from "yaml";
 import { createGenerationRun, writeGenerationMetadata } from "../assets/output.js";
 import { resolveReferenceImages } from "../assets/reference.js";
 import { loadConfig } from "../config/store.js";
+import { openAIImageSizePlanFor } from "../generation/dimensions.js";
 import { getAdapter } from "../providers/adapters.js";
 import { resolveGenerationPlan } from "../routing/resolve.js";
 import { confirmGeneration } from "./confirm.js";
@@ -39,6 +40,12 @@ export interface GenerationPlanOutput {
   n: number;
   output_format: string;
   output_directory: string;
+  size_request?: {
+    requested_size: string;
+    provider_size?: string;
+    size_adjusted: boolean;
+    size_note?: string;
+  };
   reference_images: Array<{
     path: string;
     mime_type: string;
@@ -199,6 +206,11 @@ function parseOutputFormat(value: string | undefined): "png" | "jpeg" | "webp" |
 }
 
 export function toPlanOutput(plan: ResolvedGenerationPlan): GenerationPlanOutput {
+  const sizeRequest =
+    plan.provider.protocol === "openai-images"
+      ? openAIImageSizePlanFor(plan.preset.aspect_ratio, plan.preset.size)
+      : undefined;
+
   return {
     prompt: plan.prompt,
     provider: plan.providerName,
@@ -213,6 +225,7 @@ export function toPlanOutput(plan: ResolvedGenerationPlan): GenerationPlanOutput
     n: plan.preset.n,
     output_format: plan.preset.output_format,
     output_directory: plan.outputDirectory,
+    size_request: sizeRequest,
     reference_images: plan.referenceImages.map((image) => ({
       path: image.path,
       mime_type: image.mime_type,

@@ -33,34 +33,47 @@ export class OpenAIImagesAdapter {
       throw new Error(`Missing API key environment variable: ${plan.provider.api_key_env}`);
     }
 
-    const response = await fetchWithProviderTimeout(
-      buildOpenAIImagesUrl(plan.provider.base_url, plan),
-      await buildOpenAIImagesFetchInit(plan, apiKey),
-      resolveProviderTimeoutMs(plan)
-    );
+    const rawResponses: OpenAIImagesResponse[] = [];
+    const providerImages: ProviderImageOutput[] = [];
+    const revisedPrompts: Array<string | undefined> = [];
+    const requestCount = Math.max(1, plan.preset.n);
+    const splitMultiImageRequests = requestCount > 1;
 
-    const raw = await readJsonResponse(response);
-    if (!response.ok) {
-      throw new Error(formatOpenAIImagesError(response.status, response.statusText, raw));
+    for (let index = 0; index < requestCount; index += 1) {
+      const response = await fetchWithProviderTimeout(
+        buildOpenAIImagesUrl(plan.provider.base_url, plan),
+        await buildOpenAIImagesFetchInit(plan, apiKey, splitMultiImageRequests ? 1 : undefined),
+        resolveProviderTimeoutMs(plan)
+      );
+
+      const raw = await readJsonResponse(response);
+      if (!response.ok) {
+        throw new Error(formatOpenAIImagesError(response.status, response.statusText, raw));
+      }
+
+      rawResponses.push(raw);
+      providerImages.push(...extractOpenAIImages(raw));
+      revisedPrompts.push(...(raw.data?.map((item) => item.revised_prompt) ?? []));
+
+      if (!splitMultiImageRequests) break;
     }
 
-    const providerImages = extractOpenAIImages(raw);
     const images = await writeProviderImages(run, providerImages);
-    const revisedPrompts = raw.data?.map((item) => item.revised_prompt);
 
     return {
       images: images.map((image, index) => ({
         ...image,
         revised_prompt: revisedPrompts?.[index]
       })),
-      provider_response: raw
+      provider_response: rawResponses.length === 1 ? rawResponses[0] : { requests: rawResponses }
     };
   }
 }
 
 export async function buildOpenAIImagesFetchInit(
   plan: ResolvedGenerationPlan,
-  apiKey: string
+  apiKey: string,
+  nOverride?: number
 ): Promise<RequestInit> {
   const authorization = { Authorization: `Bearer ${apiKey}` };
 
@@ -68,7 +81,7 @@ export async function buildOpenAIImagesFetchInit(
     return {
       method: "POST",
       headers: authorization,
-      body: await buildOpenAIImagesEditFormData(plan)
+      body: await buildOpenAIImagesEditFormData(plan, nOverride)
     };
   }
 
@@ -78,12 +91,13 @@ export async function buildOpenAIImagesFetchInit(
       ...authorization,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(buildOpenAIImagesRequest(plan))
+    body: JSON.stringify(buildOpenAIImagesRequest(plan, nOverride))
   };
 }
 
 export function buildOpenAIImagesRequest(
-  plan: ResolvedGenerationPlan
+  plan: ResolvedGenerationPlan,
+  nOverride?: number
 ): Record<string, unknown> {
   if (isOpenAIImageEdit(plan)) {
     throw new Error("OpenAI image edits must be sent as multipart/form-data.");
@@ -92,7 +106,7 @@ export function buildOpenAIImagesRequest(
   return removeUndefined({
     model: plan.model,
     prompt: plan.prompt,
-    n: plan.preset.n,
+    n: nOverride ?? plan.preset.n,
     size: openAIImageSizeFor(plan.preset.aspect_ratio, plan.preset.size),
     quality: mapOpenAIImageQuality(plan.preset.quality),
     output_format: plan.preset.output_format,
@@ -100,7 +114,10 @@ export function buildOpenAIImagesRequest(
   });
 }
 
-export async function buildOpenAIImagesEditFormData(plan: ResolvedGenerationPlan): Promise<FormData> {
+export async function buildOpenAIImagesEditFormData(
+  plan: ResolvedGenerationPlan,
+  nOverride?: number
+): Promise<FormData> {
   if (plan.referenceImages.length === 0) {
     throw new Error("OpenAI image edits require at least one reference image.");
   }
@@ -108,7 +125,7 @@ export async function buildOpenAIImagesEditFormData(plan: ResolvedGenerationPlan
   const form = new FormData();
   appendFormValue(form, "model", plan.model);
   appendFormValue(form, "prompt", plan.prompt);
-  appendFormValue(form, "n", plan.preset.n);
+  appendFormValue(form, "n", nOverride ?? plan.preset.n);
   appendFormValue(form, "size", openAIImageSizeFor(plan.preset.aspect_ratio, plan.preset.size));
   appendFormValue(form, "quality", mapOpenAIImageQuality(plan.preset.quality));
   appendFormValue(form, "output_format", plan.preset.output_format);
